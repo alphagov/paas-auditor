@@ -3,41 +3,35 @@ package db
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"code.cloudfoundry.org/lager"
 
-	"github.com/alphagov/paas-billing/eventio"
+	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/lib/pq"
 )
 
 const (
-	CfAuditEventsName   = "cf_audit_events"
+	CfAuditEventsTable  = "cf_audit_events"
 	DefaultInitTimeout  = 15 * time.Minute
 	DefaultStoreTimeout = 45 * time.Second
 	DefaultQueryTimeout = 45 * time.Second
 )
 
-var _ eventio.EventStore = &EventStore{}
-
 type EventStore struct {
 	db     *sql.DB
-	cfg    Config
 	logger lager.Logger
 	ctx    context.Context
 }
 
-func New(ctx context.Context, db *sql.DB, logger lager.Logger, cfg Config) *EventStore {
+func NewEventStore(ctx context.Context, db *sql.DB, logger lager.Logger) *EventStore {
 	return &EventStore{
 		db:     db,
-		cfg:    cfg,
-		logger: logger,
+		logger: logger.Session("event-store"),
 		ctx:    ctx,
 	}
 }
@@ -59,7 +53,7 @@ func (s *EventStore) Init() error {
 	return nil
 }
 
-func (s *EventStore) StoreCfAuditEvents(events []eventio.CfAuditEvent) error {
+func (s *EventStore) StoreCfAuditEvents(events []cfclient.Event) error {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultStoreTimeout)
 	defer cancel()
 	tx, err := s.db.BeginTx(ctx, nil)
@@ -68,26 +62,27 @@ func (s *EventStore) StoreCfAuditEvents(events []eventio.CfAuditEvent) error {
 	}
 	defer tx.Rollback()
 	for _, event := range events {
-		if err := event.Validate(); err != nil {
-			return err
-		}
-
 		stmt := fmt.Sprintf(`
 			insert into %s (
-				guid, created_at, raw_message
+				guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid
 			) values (
-				$1, $2, $3
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 			) on conflict do nothing
-		`, CfAuditEventsName)
-		_, err := tx.Exec(stmt, event.GUID, event.CreatedAt, event.RawMessage)
+		`, CfAuditEventsTable)
+		_, err := tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.OrganizationGUID, event.SpaceGUID)
 		return err
 	}
 	return tx.Commit()
 }
 
-// GetEvents returns eventio.CfAuditEvents filtered using eventio.RawEventFilter if present
-func (s *EventStore) GetCfAuditEvents(filter eventio.RawEventFilter) ([]eventio.CfAuditEvent, error) {
-	events := []eventio.CfAuditEvent{}
+type RawEventFilter struct {
+	Reverse bool
+	Limit   int
+	Kind    string
+}
+
+func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, error) {
+	events := []cfclient.Event{}
 	sortDirection := "desc"
 	if filter.Reverse {
 		sortDirection = "asc"
@@ -107,9 +102,18 @@ func (s *EventStore) GetCfAuditEvents(filter eventio.RawEventFilter) ([]eventio.
 		select
 			guid,
 			created_at,
-			raw_message
+			event_type,
+			actor,
+			actor_type,
+			actor_name,
+			actor_username,
+			actee,
+			actee_type,
+			actee_name,
+			organization_guid,
+			space_guid
 		from
-			` + CfAuditEventsName + `
+			` + CfAuditEventsTable + `
 		order by
 			id ` + sortDirection + `
 		` + limit + `
@@ -119,11 +123,20 @@ func (s *EventStore) GetCfAuditEvents(filter eventio.RawEventFilter) ([]eventio.
 	}
 	defer rows.Close()
 	for rows.Next() {
-		event := eventio.CfAuditEvent{}
+		event := cfclient.Event{}
 		err := rows.Scan(
 			&event.GUID,
 			&event.CreatedAt,
-			&event.RawMessage,
+			&event.Type,
+			&event.Actor,
+			&event.ActorType,
+			&event.ActorName,
+			&event.ActorUsername,
+			&event.Actee,
+			&event.ActeeType,
+			&event.ActeeName,
+			&event.OrganizationGUID,
+			&event.SpaceGUID,
 		)
 		if err != nil {
 			return nil, err
@@ -205,7 +218,7 @@ func schemaDir() string {
 	if root == "" {
 		root, _ = os.Getwd()
 	}
-	return filepath.Join(root, "eventstore", "sql")
+	return filepath.Join(root, "db", "sql")
 }
 
 func schemaFile(filename string) string {

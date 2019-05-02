@@ -2,18 +2,19 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"database/sql"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"code.cloudfoundry.org/lager"
+	"github.com/alphagov/paas-auditor/db"
+	"github.com/alphagov/paas-auditor/eventcollector"
+	"github.com/alphagov/paas-auditor/eventfetchers"
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
 func main() {
 	ctx, shutdown := context.WithCancel(context.Background())
-
 	go func() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
@@ -23,19 +24,32 @@ func main() {
 	}()
 
 	cfg := NewConfigFromEnv()
-
 	if cfg.DatabaseURL == "" {
-		return nil, fmt.Errorf("Store or DatabaseURL must be provided in Config")
+		cfg.Logger.Fatal("Store or DatabaseURL must be provided in Config", nil)
 	}
-	db, err := sql.Open("postgres", cfg.DatabaseURL)
+
+	pq, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to connect to database")
+		cfg.Logger.Fatal("failed to connect to database", err)
+	}
+	store := db.NewEventStore(ctx, pq, cfg.Logger)
+	if err := store.Init(); err != nil {
+		cfg.Logger.Fatal("failed to initialise store", err)
 	}
 
-	if err := app.StartAppEventCollector(); err != nil {
-		return err
+	cf, err := cfclient.NewClient(cfg.CFClientConfig)
+	if err != nil {
+		cfg.Logger.Fatal("failed to create CF client", err)
 	}
+	fetcher := eventfetchers.NewCFAuditEventFetcher(cf, cfg.Logger)
 
-	cfg.Logger.Info("started collector")
-	return app.Wait()
+	collector := eventcollector.NewCfAuditEventCollector(
+		cfg.Schedule,
+		cfg.MinWaitTime,
+		cfg.InitialWaitTime,
+		cfg.Logger,
+		fetcher,
+		store,
+	)
+	collector.Run(ctx)
 }

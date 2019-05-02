@@ -1,54 +1,46 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/alphagov/paas-billing/cfstore"
-	"github.com/alphagov/paas-billing/eventcollector"
-	"github.com/alphagov/paas-billing/eventfetchers/cffetcher"
-	"github.com/alphagov/paas-billing/eventio"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
-	"github.com/pkg/errors"
 
 	"code.cloudfoundry.org/lager"
 )
 
 type Config struct {
-	Logger      lager.Logger
-	Store       eventio.EventStore
-	DatabaseURL string
-	CFFetcher   cffetcher.Config
-	Schedule    time.Duration
+	Logger          lager.Logger
+	DatabaseURL     string
+	CFClientConfig  *cfclient.Config
+	Schedule        time.Duration
+	MinWaitTime     time.Duration
+	InitialWaitTime time.Duration
 }
 
 func NewConfigFromEnv() Config {
 	return Config{
 		Logger:      getDefaultLogger(),
 		DatabaseURL: getEnvWithDefaultString("DATABASE_URL", "postgres://postgres:@localhost:5432/"),
-		CFFetcher: cffetcher.Config{
-			ClientConfig: &cfclient.Config{
-				ApiAddress:        os.Getenv("CF_API_ADDRESS"),
-				Username:          os.Getenv("CF_USERNAME"),
-				Password:          os.Getenv("CF_PASSWORD"),
-				ClientID:          os.Getenv("CF_CLIENT_ID"),
-				ClientSecret:      os.Getenv("CF_CLIENT_SECRET"),
-				SkipSslValidation: os.Getenv("CF_SKIP_SSL_VALIDATION") == "true",
-				Token:             os.Getenv("CF_TOKEN"),
-				UserAgent:         os.Getenv("CF_USER_AGENT"),
-				HttpClient: &http.Client{
-					Timeout: 30 * time.Second,
-				},
+		CFClientConfig: &cfclient.Config{
+			ApiAddress:        os.Getenv("CF_API_ADDRESS"),
+			Username:          os.Getenv("CF_USERNAME"),
+			Password:          os.Getenv("CF_PASSWORD"),
+			ClientID:          os.Getenv("CF_CLIENT_ID"),
+			ClientSecret:      os.Getenv("CF_CLIENT_SECRET"),
+			SkipSslValidation: os.Getenv("CF_SKIP_SSL_VALIDATION") == "true",
+			Token:             os.Getenv("CF_TOKEN"),
+			UserAgent:         os.Getenv("CF_USER_AGENT"),
+			HttpClient: &http.Client{
+				Timeout: 30 * time.Second,
 			},
-			RecordMinAge: getEnvWithDefaultDuration("CF_RECORD_MIN_AGE", 10*time.Minute),
-			FetchLimit:   getEnvWithDefaultInt("CF_FETCH_LIMIT", 50),
 		},
-		Schedule: getEnvWithDefaultDuration("SCHEDULE", 30*time.Minute),
+		Schedule:        getEnvWithDefaultDuration("SCHEDULE", 15*time.Minute),
+		MinWaitTime:     getEnvWithDefaultDuration("COLLECTOR_MIN_WAIT_TIME", 3*time.Second),
+		InitialWaitTime: getEnvWithDefaultDuration("COLLECTOR_INITIAL_WAIT_TIME", 5*time.Second),
 	}
 }
 
