@@ -1,6 +1,6 @@
 debug.test
 coverage.txt
 profile.out
-paas-billing
-bin/paas-billing
+paas-auditor
+bin/paas-auditor
 .idea
