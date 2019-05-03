@@ -18,8 +18,8 @@ import (
 const (
 	CfAuditEventsTable  = "cf_audit_events"
 	DefaultInitTimeout  = 15 * time.Minute
-	DefaultStoreTimeout = 45 * time.Second
-	DefaultQueryTimeout = 45 * time.Second
+	DefaultStoreTimeout = 10 * time.Minute
+	DefaultQueryTimeout = 60 * time.Second
 )
 
 type EventStore struct {
