@@ -142,8 +142,8 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 			actee,
 			actee_type,
 			actee_name,
-			organization_guid,
-			space_guid
+			organization_guid AS text,
+			space_guid AS text
 		from
 			` + CfAuditEventsTable + `
 		order by
