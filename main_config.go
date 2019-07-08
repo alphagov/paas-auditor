@@ -13,12 +13,13 @@ import (
 )
 
 type Config struct {
-	Logger          lager.Logger
-	DatabaseURL     string
-	CFClientConfig  *cfclient.Config
-	Schedule        time.Duration
-	MinWaitTime     time.Duration
-	InitialWaitTime time.Duration
+	Logger             lager.Logger
+	DatabaseURL        string
+	CFClientConfig     *cfclient.Config
+	Schedule           time.Duration
+	MinWaitTime        time.Duration
+	InitialWaitTime    time.Duration
+	PaginationWaitTime time.Duration
 }
 
 func NewConfigFromEnv() Config {
@@ -38,9 +39,10 @@ func NewConfigFromEnv() Config {
 				Timeout: 30 * time.Second,
 			},
 		},
-		Schedule:        getEnvWithDefaultDuration("SCHEDULE", 15*time.Minute),
-		MinWaitTime:     getEnvWithDefaultDuration("COLLECTOR_MIN_WAIT_TIME", 3*time.Second),
-		InitialWaitTime: getEnvWithDefaultDuration("COLLECTOR_INITIAL_WAIT_TIME", 5*time.Second),
+		Schedule:           getEnvWithDefaultDuration("SCHEDULE", 15*time.Minute),
+		MinWaitTime:        getEnvWithDefaultDuration("COLLECTOR_MIN_WAIT_TIME", 3*time.Second),
+		InitialWaitTime:    getEnvWithDefaultDuration("COLLECTOR_INITIAL_WAIT_TIME", 5*time.Second),
+		PaginationWaitTime: getEnvWithDefaultDuration("FETCHER_PAGINATION_WAIT_TIME", 200*time.Millisecond),
 	}
 }
 

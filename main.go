@@ -52,7 +52,7 @@ func main() {
 	if err != nil {
 		cfg.Logger.Fatal("failed to create CF client", err)
 	}
-	fetcher := eventfetchers.NewCFAuditEventFetcher(cf, cfg.Logger)
+	fetcher := eventfetchers.NewCFAuditEventFetcher(cf, cfg.Logger, cfg.PaginationWaitTime)
 
 	collector := eventcollector.NewCfAuditEventCollector(
 		cfg.Schedule,

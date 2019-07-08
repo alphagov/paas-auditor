@@ -12,14 +12,16 @@ import (
 )
 
 type CFAuditEventFetcher struct {
-	client *cfclient.Client
-	logger lager.Logger
+	client             *cfclient.Client
+	logger             lager.Logger
+	paginationWaitTime time.Duration
 }
 
-func NewCFAuditEventFetcher(client *cfclient.Client, logger lager.Logger) *CFAuditEventFetcher {
+func NewCFAuditEventFetcher(client *cfclient.Client, logger lager.Logger, paginationWaitTime time.Duration) *CFAuditEventFetcher {
 	return &CFAuditEventFetcher{
-		client: client,
-		logger: logger.Session("cf-audit-event-fetcher"),
+		client:             client,
+		logger:             logger.Session("cf-audit-event-fetcher"),
+		paginationWaitTime: paginationWaitTime,
 	}
 }
 
@@ -53,7 +55,7 @@ func (e *CFAuditEventFetcher) FetchEvents(ctx context.Context, pullEventsSince t
 		}
 		requestURL = nextURL
 
-		time.Sleep(e.client.Config.PaginationDelay)
+		time.Sleep(e.paginationWaitTime)
 	}
 
 	close(errChan)
