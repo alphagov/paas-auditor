@@ -11,7 +11,7 @@ import (
 
 	"code.cloudfoundry.org/lager"
 
-	"github.com/cloudfoundry-community/go-cfclient"
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/lib/pq"
 )
 
