@@ -178,6 +178,40 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 	return events, nil
 }
 
+func (s *EventStore) LastSeenEvent() (*time.Time, error) {
+	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
+	defer cancel()
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	rows, err := tx.Query(`
+		select
+			created_at
+		from
+			` + CfAuditEventsTable + `
+		order by
+			created_at DESC
+		limit 1
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		var createdAt time.Time
+		err = rows.Scan(&createdAt)
+		if err != nil {
+			return nil, err
+		}
+		return &createdAt, nil
+	}
+
+	return nil, nil
+}
+
 func (s *EventStore) runSQLFilesInTransaction(ctx context.Context, filenames ...string) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {

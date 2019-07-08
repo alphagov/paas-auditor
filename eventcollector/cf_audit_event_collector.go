@@ -35,11 +35,12 @@ type CfAuditEventCollector struct {
 	eventsCollected int
 }
 
-func NewCfAuditEventCollector(schedule, minWaitTime, initialWaitTime time.Duration, logger lager.Logger, fetcher *eventfetchers.CFAuditEventFetcher, store *db.EventStore) *CfAuditEventCollector {
+func NewCfAuditEventCollector(schedule, minWaitTime, initialWaitTime time.Duration, lastRun time.Time, logger lager.Logger, fetcher *eventfetchers.CFAuditEventFetcher, store *db.EventStore) *CfAuditEventCollector {
 	return &CfAuditEventCollector{
 		schedule:        schedule,
 		minWaitTime:     minWaitTime,
 		initialWaitTime: initialWaitTime,
+		lastRun:         lastRun,
 		logger:          logger.Session("cf-audit-event-collector"),
 		fetcher:         fetcher,
 		store:           store,

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/alphagov/paas-auditor/db"
 	"github.com/alphagov/paas-auditor/eventcollector"
@@ -37,6 +38,16 @@ func main() {
 		cfg.Logger.Fatal("failed to initialise store", err)
 	}
 
+	lastRun, err := store.LastSeenEvent()
+	if err != nil {
+		cfg.Logger.Fatal("error finding last seen event", err)
+	}
+	if lastRun == nil {
+		// If the database is empty, get the last week of data
+		fourWeeksAgo := time.Now().AddDate(0, 0, -28)
+		lastRun = &fourWeeksAgo
+	}
+
 	cf, err := cfclient.NewClient(cfg.CFClientConfig)
 	if err != nil {
 		cfg.Logger.Fatal("failed to create CF client", err)
@@ -47,6 +58,7 @@ func main() {
 		cfg.Schedule,
 		cfg.MinWaitTime,
 		cfg.InitialWaitTime,
+		*lastRun,
 		cfg.Logger,
 		fetcher,
 		store,
