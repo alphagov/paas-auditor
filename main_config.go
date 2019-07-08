@@ -39,7 +39,7 @@ func NewConfigFromEnv() Config {
 				Timeout: 30 * time.Second,
 			},
 		},
-		Schedule:           getEnvWithDefaultDuration("SCHEDULE", 15*time.Minute),
+		Schedule:           getEnvWithDefaultDuration("SCHEDULE", 5*time.Minute),
 		MinWaitTime:        getEnvWithDefaultDuration("COLLECTOR_MIN_WAIT_TIME", 3*time.Second),
 		InitialWaitTime:    getEnvWithDefaultDuration("COLLECTOR_INITIAL_WAIT_TIME", 5*time.Second),
 		PaginationWaitTime: getEnvWithDefaultDuration("FETCHER_PAGINATION_WAIT_TIME", 200*time.Millisecond),
