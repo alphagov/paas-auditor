@@ -2,7 +2,6 @@ package eventcollector
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"code.cloudfoundry.org/lager"
@@ -31,7 +30,6 @@ type CfAuditEventCollector struct {
 	logger          lager.Logger
 	fetcher         *eventfetchers.CFAuditEventFetcher
 	store           *db.EventStore
-	mu              sync.Mutex
 	eventsCollected int
 }
 
@@ -52,8 +50,6 @@ func NewCfAuditEventCollector(schedule, minWaitTime, initialWaitTime time.Durati
 func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 	c.logger.Info("started")
 	defer c.logger.Info("stopping")
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	for {
 		c.logger.Info("status", lager.Data{
