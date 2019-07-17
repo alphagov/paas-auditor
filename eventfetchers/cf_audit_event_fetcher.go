@@ -37,7 +37,7 @@ func (e *CFAuditEventFetcher) FetchEvents(ctx context.Context, pullEventsSince t
 	requestURL := fmt.Sprintf("/v2/events?%s", q.Encode())
 
 	for {
-		events, nextURL, err := e.fetchEventsPage(ctx, requestURL)
+		events, nextURL, err := e.fetchEventsPage(requestURL)
 		if err != nil {
 			errChan <- err
 			break
@@ -62,7 +62,7 @@ func (e *CFAuditEventFetcher) FetchEvents(ctx context.Context, pullEventsSince t
 	close(eventsChan)
 }
 
-func (e *CFAuditEventFetcher) fetchEventsPage(ctx context.Context, requestURL string) ([]cfclient.Event, string, error) {
+func (e *CFAuditEventFetcher) fetchEventsPage(requestURL string) ([]cfclient.Event, string, error) {
 	r := e.client.NewRequest("GET", requestURL)
 	resp, err := e.client.DoRequest(r)
 	if err != nil {

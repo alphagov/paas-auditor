@@ -72,6 +72,7 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 				"count":    collectedEventsCount,
 				"duration": elapsedTime.String(),
 			})
+		// To be able to exit cleanly
 		case <-ctx.Done():
 			return nil
 		}
