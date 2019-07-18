@@ -89,12 +89,13 @@ func (c *CfAuditEventCollector) collect(ctx context.Context) (int, error) {
 	go c.fetcher.FetchEvents(ctx, pullEventsSince, eventsChan, errChan)
 
 	eventsCount := 0
+chanloop:
 	for {
 		select {
 		case events, stillOpen := <-eventsChan:
 			if !stillOpen {
 				c.logger.Info("collect.eventschan-closed")
-				break
+				break chanloop
 			}
 			eventsCount += len(events)
 			err := c.store.StoreCfAuditEvents(events)
@@ -106,7 +107,7 @@ func (c *CfAuditEventCollector) collect(ctx context.Context) (int, error) {
 		case err, stillOpen := <-errChan:
 			if !stillOpen {
 				c.logger.Info("collect.errchan-closed")
-				break
+				break chanloop
 			}
 			return eventsCount, err
 		}
