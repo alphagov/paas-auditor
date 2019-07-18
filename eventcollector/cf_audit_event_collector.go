@@ -2,7 +2,6 @@ package eventcollector
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"code.cloudfoundry.org/lager"
@@ -31,15 +30,15 @@ type CfAuditEventCollector struct {
 	logger          lager.Logger
 	fetcher         *eventfetchers.CFAuditEventFetcher
 	store           *db.EventStore
-	mu              sync.Mutex
 	eventsCollected int
 }
 
-func NewCfAuditEventCollector(schedule, minWaitTime, initialWaitTime time.Duration, logger lager.Logger, fetcher *eventfetchers.CFAuditEventFetcher, store *db.EventStore) *CfAuditEventCollector {
+func NewCfAuditEventCollector(schedule, minWaitTime, initialWaitTime time.Duration, lastRun time.Time, logger lager.Logger, fetcher *eventfetchers.CFAuditEventFetcher, store *db.EventStore) *CfAuditEventCollector {
 	return &CfAuditEventCollector{
 		schedule:        schedule,
 		minWaitTime:     minWaitTime,
 		initialWaitTime: initialWaitTime,
+		lastRun:         lastRun,
 		logger:          logger.Session("cf-audit-event-collector"),
 		fetcher:         fetcher,
 		store:           store,
@@ -51,8 +50,6 @@ func NewCfAuditEventCollector(schedule, minWaitTime, initialWaitTime time.Durati
 func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 	c.logger.Info("started")
 	defer c.logger.Info("stopping")
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	for {
 		c.logger.Info("status", lager.Data{
@@ -63,18 +60,19 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 		select {
 		case <-time.After(c.waitDuration()):
 			startTime := time.Now()
-			collectedEvents, err := c.collect(ctx)
+			collectedEventsCount, err := c.collect(ctx)
 			if err != nil {
 				c.state = Scheduled
 				c.logger.Error("collect-error", err)
 				continue
 			}
 			elapsedTime := time.Since(startTime)
-			c.eventsCollected += len(collectedEvents)
+			c.eventsCollected += collectedEventsCount
 			c.logger.Info("collected", lager.Data{
-				"count":    len(collectedEvents),
+				"count":    collectedEventsCount,
 				"duration": elapsedTime.String(),
 			})
+		// To be able to exit cleanly
 		case <-ctx.Done():
 			return nil
 		}
@@ -82,19 +80,41 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 }
 
 // collect reads a batch of RawEvents from the EventFetcher and writes them to the EventStore
-func (c *CfAuditEventCollector) collect(ctx context.Context) ([]cfclient.Event, error) {
-	events, err := c.fetcher.FetchEvents(ctx, c.lastRun)
-	if err != nil {
-		return nil, err
-	}
+func (c *CfAuditEventCollector) collect(ctx context.Context) (int, error) {
+	c.logger.Info("collect.start")
+	// Pull an extra 5 seconds of events, to ensure we don't miss any
+	pullEventsSince := c.lastRun.Add(-5 * time.Second)
+	eventsChan := make(chan []cfclient.Event)
+	errChan := make(chan error)
+	go c.fetcher.FetchEvents(ctx, pullEventsSince, eventsChan, errChan)
 
-	if err := c.store.StoreCfAuditEvents(events); err != nil {
-		return nil, err
+	eventsCount := 0
+	for {
+		select {
+		case events, stillOpen := <-eventsChan:
+			if !stillOpen {
+				c.logger.Info("collect.eventschan-closed")
+				break
+			}
+			eventsCount += len(events)
+			err := c.store.StoreCfAuditEvents(events)
+			if err != nil {
+				c.logger.Info("collect.store-error")
+				return eventsCount, err
+			}
+			c.logger.Info("collected.page")
+		case err, stillOpen := <-errChan:
+			if !stillOpen {
+				c.logger.Info("collect.errchan-closed")
+				break
+			}
+			return eventsCount, err
+		}
 	}
 
 	c.lastRun = time.Now()
 	c.state = Scheduled
-	return events, nil
+	return eventsCount, nil
 }
 
 // wait returns a channel that closes after the collection schedule time has elapsed

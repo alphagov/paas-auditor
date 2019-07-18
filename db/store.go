@@ -63,43 +63,14 @@ func (s *EventStore) StoreCfAuditEvents(events []cfclient.Event) error {
 	defer tx.Rollback()
 	for _, event := range events {
 		var err error
-		if event.OrganizationGUID != "" && event.SpaceGUID != "" {
-			stmt := fmt.Sprintf(`
-				insert into %s (
-					guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid
-				) values (
-					$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
-				) on conflict do nothing
-			`, CfAuditEventsTable)
-			_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.OrganizationGUID, event.SpaceGUID)
-		} else if event.OrganizationGUID != "" {
-			stmt := fmt.Sprintf(`
-				insert into %s (
-					guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid
-				) values (
-					$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, null::uuid
-				) on conflict do nothing
-			`, CfAuditEventsTable)
-			_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.OrganizationGUID)
-		} else if event.SpaceGUID != "" {
-			stmt := fmt.Sprintf(`
-				insert into %s (
-					guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid
-				) values (
-					$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, null::uuid, $11
-				) on conflict do nothing
-			`, CfAuditEventsTable)
-			_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.SpaceGUID)
-		} else {
-			stmt := fmt.Sprintf(`
-				insert into %s (
-					guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid
-				) values (
-					$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, null::uuid, null::uuid
-				) on conflict do nothing
-			`, CfAuditEventsTable)
-			_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName)
-		}
+		stmt := fmt.Sprintf(`
+			insert into %s (
+				guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid
+			) values (
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NULLIF($11, '')::uuid, NULLIF($12, '')::uuid
+			) on conflict do nothing
+		`, CfAuditEventsTable)
+		_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.OrganizationGUID, event.SpaceGUID)
 		if err != nil {
 			return err
 		}
@@ -142,8 +113,8 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 			actee,
 			actee_type,
 			actee_name,
-			organization_guid,
-			space_guid
+			organization_guid AS text,
+			space_guid AS text
 		from
 			` + CfAuditEventsTable + `
 		order by
@@ -176,6 +147,29 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 		events = append(events, event)
 	}
 	return events, nil
+}
+
+func (s *EventStore) LastSeenEvent() (*time.Time, error) {
+	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
+	defer cancel()
+	row := s.db.QueryRowContext(ctx, `
+		select
+			created_at
+		from
+			`+CfAuditEventsTable+`
+		order by
+			created_at DESC
+		limit 1
+	`)
+
+	var createdAt time.Time
+	err := row.Scan(&createdAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+	return &createdAt, nil
 }
 
 func (s *EventStore) runSQLFilesInTransaction(ctx context.Context, filenames ...string) error {
