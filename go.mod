@@ -16,3 +16,5 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 )
+
+replace github.com/cloudfoundry-community/go-cfclient => github.com/46bit/go-cfclient v0.0.0-20190725011843-c14b8e0d65c9

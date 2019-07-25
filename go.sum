@@ -3,6 +3,8 @@ code.cloudfoundry.org/gofileutils v0.0.0-20170111115228-4d0c80011a0f h1:UrKzEwTg
 code.cloudfoundry.org/gofileutils v0.0.0-20170111115228-4d0c80011a0f/go.mod h1:sk5LnIjB/nIEU7yP5sDQExVm62wu0pBh3yrElngUisI=
 code.cloudfoundry.org/lager v0.0.0-20180322215153-25ee72f227fe h1:DJxFoSmhG1JqYPslxf6A9BIeO0hBBM3NUB9Daq+aJD0=
 code.cloudfoundry.org/lager v0.0.0-20180322215153-25ee72f227fe/go.mod h1:O2sS7gKP3HM2iemG+EnwvyNQK7pTSC6Foi4QiMp9sSk=
+github.com/46bit/go-cfclient v0.0.0-20190725011843-c14b8e0d65c9 h1:ABq/TnZiPH9Vt+hop5qpMmzAy/9UyZTWUu2bCs6YbBI=
+github.com/46bit/go-cfclient v0.0.0-20190725011843-c14b8e0d65c9/go.mod h1:RtIewdO+K/czvxvIFCMbPyx7jdxSLL1RZ+DA/Vk8Lwg=
 github.com/Masterminds/semver v1.4.2 h1:WBLTQ37jOCzSLtXNdoo8bNM8876KhNqOKvrlGITgsTc=
 github.com/Masterminds/semver v1.4.2/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
 github.com/cloudfoundry-community/go-cfclient v0.0.0-20190611131856-16c98753d315 h1:QK5gfJ7oZ4BJUgKOtTFvyB+e+gdRS2NU6q/h5KrqDeA=
