@@ -4,7 +4,7 @@ code.cloudfoundry.org/gofileutils/fileutils
 code.cloudfoundry.org/lager
 # github.com/Masterminds/semver v1.4.2
 github.com/Masterminds/semver
-# github.com/cloudfoundry-community/go-cfclient v0.0.0-20190611131856-16c98753d315
+# github.com/cloudfoundry-community/go-cfclient v0.0.0-20190802192030-078182380772
 github.com/cloudfoundry-community/go-cfclient
 # github.com/golang/protobuf v1.2.0
 github.com/golang/protobuf/proto

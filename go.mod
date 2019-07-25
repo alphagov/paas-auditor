@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	code.cloudfoundry.org/lager v0.0.0-20180322215153-25ee72f227fe
-	github.com/cloudfoundry-community/go-cfclient v0.0.0-20190611131856-16c98753d315
+	github.com/cloudfoundry-community/go-cfclient v0.0.0-20190802192030-078182380772
 	github.com/cloudfoundry/gofileutils v0.0.0-20170111115228-4d0c80011a0f // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/labstack/echo v3.3.4+incompatible // indirect

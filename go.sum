@@ -3,10 +3,16 @@ code.cloudfoundry.org/gofileutils v0.0.0-20170111115228-4d0c80011a0f h1:UrKzEwTg
 code.cloudfoundry.org/gofileutils v0.0.0-20170111115228-4d0c80011a0f/go.mod h1:sk5LnIjB/nIEU7yP5sDQExVm62wu0pBh3yrElngUisI=
 code.cloudfoundry.org/lager v0.0.0-20180322215153-25ee72f227fe h1:DJxFoSmhG1JqYPslxf6A9BIeO0hBBM3NUB9Daq+aJD0=
 code.cloudfoundry.org/lager v0.0.0-20180322215153-25ee72f227fe/go.mod h1:O2sS7gKP3HM2iemG+EnwvyNQK7pTSC6Foi4QiMp9sSk=
+github.com/46bit/go-cfclient v0.0.0-20190725011843-c14b8e0d65c9 h1:ABq/TnZiPH9Vt+hop5qpMmzAy/9UyZTWUu2bCs6YbBI=
+github.com/46bit/go-cfclient v0.0.0-20190725011843-c14b8e0d65c9/go.mod h1:RtIewdO+K/czvxvIFCMbPyx7jdxSLL1RZ+DA/Vk8Lwg=
 github.com/Masterminds/semver v1.4.2 h1:WBLTQ37jOCzSLtXNdoo8bNM8876KhNqOKvrlGITgsTc=
 github.com/Masterminds/semver v1.4.2/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
+github.com/alphagov/paas-go-cfclient v0.0.0-20190725011843-50d12c5112a0 h1:WyFI/2KzmtgNxRK7E6XnsRF4M3Z/vKRZzyYRUJGLWA4=
+github.com/alphagov/paas-go-cfclient v0.0.0-20190725011843-50d12c5112a0/go.mod h1:RtIewdO+K/czvxvIFCMbPyx7jdxSLL1RZ+DA/Vk8Lwg=
 github.com/cloudfoundry-community/go-cfclient v0.0.0-20190611131856-16c98753d315 h1:QK5gfJ7oZ4BJUgKOtTFvyB+e+gdRS2NU6q/h5KrqDeA=
 github.com/cloudfoundry-community/go-cfclient v0.0.0-20190611131856-16c98753d315/go.mod h1:RtIewdO+K/czvxvIFCMbPyx7jdxSLL1RZ+DA/Vk8Lwg=
+github.com/cloudfoundry-community/go-cfclient v0.0.0-20190802192030-078182380772 h1:NBkUE50q4sg4Fw5p9PqExIrCVXP32mmPijYcNFMbB5w=
+github.com/cloudfoundry-community/go-cfclient v0.0.0-20190802192030-078182380772/go.mod h1:RtIewdO+K/czvxvIFCMbPyx7jdxSLL1RZ+DA/Vk8Lwg=
 github.com/cloudfoundry/gofileutils v0.0.0-20170111115228-4d0c80011a0f/go.mod h1:Zv7xtAh/T/tmfZlxpESaWWiWOdiJz2GfbBYxImuI6T4=
 github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0/go.mod h1:4Zcjuz89kmFXt9morQgcfYZAYZ5n8WHjt81YYWIwtTM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
