@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -62,15 +63,19 @@ func (s *EventStore) StoreCfAuditEvents(events []cfclient.Event) error {
 	}
 	defer tx.Rollback()
 	for _, event := range events {
-		var err error
+		eventMetadataJSON, err := json.Marshal(&event.Metadata)
+		if err != nil {
+			return err
+		}
+
 		stmt := fmt.Sprintf(`
 			insert into %s (
-				guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid
+				guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid, metadata
 			) values (
 				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NULLIF($11, '')::uuid, NULLIF($12, '')::uuid
 			) on conflict do nothing
 		`, CfAuditEventsTable)
-		_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.OrganizationGUID, event.SpaceGUID)
+		_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.OrganizationGUID, event.SpaceGUID, eventMetadataJSON)
 		if err != nil {
 			return err
 		}
@@ -114,7 +119,8 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 			actee_type,
 			actee_name,
 			organization_guid AS text,
-			space_guid AS text
+			space_guid AS text,
+			metadata
 		from
 			` + CfAuditEventsTable + `
 		order by
@@ -127,7 +133,8 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 	defer rows.Close()
 	for rows.Next() {
 		event := cfclient.Event{}
-		err := rows.Scan(
+		bytesOfMetadataJSON := []byte{}
+		err = rows.Scan(
 			&event.GUID,
 			&event.CreatedAt,
 			&event.Type,
@@ -140,9 +147,16 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 			&event.ActeeName,
 			&event.OrganizationGUID,
 			&event.SpaceGUID,
+			&bytesOfMetadataJSON,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if len(bytesOfMetadataJSON) > 0 {
+			err = json.Unmarshal(bytesOfMetadataJSON, &event.Metadata)
+			if err != nil {
+				return nil, err
+			}
 		}
 		events = append(events, event)
 	}
