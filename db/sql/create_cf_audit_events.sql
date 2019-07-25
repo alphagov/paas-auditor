@@ -27,3 +27,5 @@ DO $$ BEGIN
 EXCEPTION
 	WHEN duplicate_object THEN RAISE NOTICE 'constraint already exists';
 END; $$;
+
+ALTER TABLE cf_audit_events ADD COLUMN IF NOT EXISTS metadata JSONB;
