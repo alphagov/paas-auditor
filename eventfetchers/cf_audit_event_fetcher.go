@@ -25,60 +25,55 @@ func NewCFAuditEventFetcher(client *cfclient.Client, logger lager.Logger, pagina
 	}
 }
 
-func (e *CFAuditEventFetcher) FetchEvents(ctx context.Context, pullEventsSince time.Time, eventsChan chan []cfclient.Event, errChan chan error) {
-	e.logger.Info("fetching", lager.Data{
-		"pull_events_since": pullEventsSince,
-	})
+func (e *CFAuditEventFetcher) FetchEvents(pullEventsSince time.Time, eventsChan chan []cfclient.Event, errChan chan error) {
+	logger := e.logger.WithData(lager.Data{"pull_events_since": pullEventsSince})
+	logger.Info("fetching")
+	nextPageURL := startPageURL(pullEventsSince)
 
+	defer close(errChan)
+	defer close(eventsChan)
+
+	for nextPageURL != "" {
+		logger = logger.WithData(lager.Data{"page_url": nextPageURL})
+		nextPageURL, events, err := e.getPage(nextPageURL, e.client)
+		if err != nil {
+			logger.Error("fetched.page.error", err)
+			errChan <- err
+			return
+		}
+		logger.Info("fetched.page.ok", lager.Data{"event_count": len(events)})
+		eventsChan <- events
+
+		time.Sleep(e.paginationWaitTime)
+	}
+}
+
+func startPageURL(pullEventsSince time.Time) string {
 	timestamp := fmt.Sprintf("timestamp>%s", pullEventsSince.Format("2006-01-02T15:04:05Z"))
 	q := url.Values{}
 	q.Set("q", timestamp)
 	q.Set("results-per-page", "100")
-	requestURL := fmt.Sprintf("/v2/events?%s", q.Encode())
-
-	for {
-		events, nextURL, err := e.fetchEventsPage(requestURL)
-		if err != nil {
-			errChan <- err
-			break
-		}
-		e.logger.Info("fetched.page", lager.Data{
-			"pull_events_since": pullEventsSince,
-			"page_url":          requestURL,
-			"event_count":       len(events),
-		})
-
-		eventsChan <- events
-
-		if nextURL == "" {
-			break
-		}
-		requestURL = nextURL
-
-		time.Sleep(e.paginationWaitTime)
-	}
-
-	close(errChan)
-	close(eventsChan)
+	return fmt.Sprintf("/v2/events?%s", q.Encode())
 }
 
-func (e *CFAuditEventFetcher) fetchEventsPage(requestURL string) ([]cfclient.Event, string, error) {
-	r := e.client.NewRequest("GET", requestURL)
-	resp, err := e.client.DoRequest(r)
+func getPage(url string, client *cfclient.Client) (string, []cfclient.Event, error) {
+	resp, err := e.client.DoRequest(e.client.NewRequest("GET", url))
 	if err != nil {
-		return nil, "", fmt.Errorf("error requesting events: %s", err)
+		return "", nil, fmt.Errorf("error requesting events: %s", err)
 	}
 	defer resp.Body.Close()
 
 	var eventResp cfclient.EventsResponse
 	if err := json.NewDecoder(resp.Body).Decode(&eventResp); err != nil {
-		return nil, "", fmt.Errorf("error unmarshaling events: %s", err)
+		return "", nil, fmt.Errorf("error unmarshaling events: %s", err)
 	}
-	var events []cfclient.Event
+
+	events := make([]cfclient.Event, len(eventResp.Resources))
 	for _, e := range eventResp.Resources {
 		e.Entity.GUID = e.Meta.Guid
 		e.Entity.CreatedAt = e.Meta.CreatedAt
 		events = append(events, e.Entity)
 	}
-	return events, eventResp.NextURL, nil
+
+	return eventResp.NextURL, events, nil
 }
