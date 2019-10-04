@@ -71,10 +71,10 @@ func getPage(cfClient cfclient.CloudFoundryClient, url string) (string, []cfclie
 	}
 
 	events := make([]cfclient.Event, len(eventResp.Resources))
-	for _, e := range eventResp.Resources {
+	for i, e := range eventResp.Resources {
 		e.Entity.GUID = e.Meta.Guid
 		e.Entity.CreatedAt = e.Meta.CreatedAt
-		events = append(events, e.Entity)
+		events[i] = e.Entity
 	}
 
 	return eventResp.NextURL, events, nil

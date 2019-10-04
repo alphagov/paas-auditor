@@ -14,7 +14,7 @@ require (
 	github.com/mattn/go-isatty v0.0.3 // indirect
 	github.com/onsi/ginkgo v1.6.0
 	github.com/onsi/gomega v1.4.3
-	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/satori/go.uuid v1.2.0
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 )
