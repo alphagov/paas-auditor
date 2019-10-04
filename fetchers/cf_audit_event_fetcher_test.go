@@ -1,20 +1,34 @@
 package fetchers
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"time"
 
+	//"code.cloudfoundry.org/lager"
+	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 func stubHTTPResponse(statusCode int, jsonifyToBody interface{}) *http.Response {
-
+	json, err := json.MarshalIndent(jsonifyToBody, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return &http.Response{
+		StatusCode: statusCode,
+		Body:       ioutil.NopCloser(bytes.NewReader(json)),
+	}
 }
 
 var _ = Describe("CFAuditEvents Fetcher", func() {
 	var err error
-	var cfg *FetcherConfig
+	//var cfg *FetcherConfig
 
 	Describe("startPageURL", func() {
 		var nowURL string
@@ -55,45 +69,45 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 					Url:    path,
 				}
 			}
-			cfg = &FetcherConfig{
-				CFClient:           fakeCFClient,
-				Logger:             lager.NewLogger("test"),
-				PaginationWaitTime: 0,
-			}
 		})
 
-		It("returns events with the GUID and CreatedAt fields set", func() {
-			Expect("implementation").To(Equal("TODO"))
-		})
+		// It("returns events with the GUID and CreatedAt fields set", func() {
+		// 	Expect("implementation").To(Equal("TODO"))
+		// })
 
 		It("returns the URL of the next page", func() {
-			fakeCFClient.DoRequestReturns(stubHTTPResponse(http.StatusOK, cfclient.EventsResponse{
+			fakeCFClient.DoRequestReturns(stubHTTPResponse(200, cfclient.EventsResponse{
 				Pages:   2,
 				NextURL: "/v2/events?page=2",
 			}), nil)
 
-			nextUrl, _, err := getPage(cfg, "/v2/events")
+			nextUrl, _, err := getPage(fakeCFClient, "/v2/events")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nextUrl).To(Equal("/v2/events?page=2"))
 		})
 
-		It("returns an error if the request fails", func() {
-			fakeCFClient.DoRequestReturns(nil, "test error")
+		It("returns an empty string if there is no next page", func() {
+			fakeCFClient.DoRequestReturns(stubHTTPResponse(200, cfclient.EventsResponse{NextURL: ""}), nil)
 
-			_, _, err := getPage(cfg, "/v2/events")
+			// TODO: Add a few events and check they did come out as well as the empty nextUrl
+			nextUrl, _, err := getPage(fakeCFClient, "/v2/events")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(nextUrl).To(Equal(""))
+		})
+
+		It("returns an error if the request fails", func() {
+			fakeCFClient.DoRequestReturns(nil, fmt.Errorf("test error"))
+
+			_, _, err := getPage(fakeCFClient, "/v2/events")
 			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(HaveSuffix("test error"))
 		})
 
 		It("returns an error if the response has a non-200 status code", func() {
-			Expect("implementation").To(Equal("TODO"))
-		})
+			fakeCFClient.DoRequestReturns(stubHTTPResponse(401, "Unauthorized"), nil)
 
-		It("returns an error if the response cannot be parsed as JSON", func() {
-			Expect("implementation").To(Equal("TODO"))
-		})
-
-		It("returns an empty string if there is no next page", func() {
-			Expect("implementation").To(Equal("TODO"))
+			_, _, err := getPage(fakeCFClient, "/v2/events")
+			Expect(err).To(HaveOccurred())
 		})
 
 		It("only makes one GET request", func() {
@@ -102,7 +116,7 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 				NextURL: "/v2/events?page=2",
 			}), nil)
 
-			_, _, err := getPage(cfg, "/v2/events")
+			_, _, err := getPage(fakeCFClient, "/v2/events")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeCFClient.DoRequestCallCount()).To(Equal(1))
 		})

@@ -31,7 +31,7 @@ func startPageURL(pullEventsSince time.Time) string {
 func fetchEvents(cfg *FetcherConfig, startPageURL string, results chan CFAuditEventResult) {
 	defer close(results)
 
-	logger := cfg.logger.WithData(lager.Data{"start_page_url": startPageURL})
+	logger := cfg.Logger.WithData(lager.Data{"start_page_url": startPageURL})
 	logger.Info("fetching")
 
 	nextPageURL := startPageURL
@@ -50,7 +50,7 @@ func fetchEvents(cfg *FetcherConfig, startPageURL string, results chan CFAuditEv
 		logger.Info("fetched.page.ok", lager.Data{"event_count": len(events)})
 		results <- CFAuditEventResult{Events: events}
 
-		time.Sleep(cfg.paginationWaitTime)
+		time.Sleep(cfg.PaginationWaitTime)
 	}
 }
 
@@ -62,7 +62,7 @@ func getPage(cfClient cfclient.CloudFoundryClient, url string) (string, []cfclie
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("request failed with status code %d: '%s'", path, resp.StatusCode, resBody)
+		return "", nil, fmt.Errorf("request failed with status code %d", resp.StatusCode)
 	}
 
 	var eventResp cfclient.EventsResponse
