@@ -54,18 +54,6 @@ func getEnvWithDefaultDuration(k string, def time.Duration) time.Duration {
 	return d
 }
 
-func getEnvWithDefaultInt(k string, def int) int {
-	v := getEnvWithDefaultString(k, "")
-	if v == "" {
-		return def
-	}
-	n, err := strconv.Atoi(v)
-	if err != nil {
-		panic(err)
-	}
-	return n
-}
-
 func getEnvWithDefaultString(k string, def string) string {
 	v := os.Getenv(k)
 	if v == "" {
@@ -83,12 +71,4 @@ func getDefaultLogger() lager.Logger {
 	logger.RegisterSink(lager.NewWriterSink(os.Stdout, logLevel))
 
 	return logger
-}
-
-func getwd() string {
-	pwd := os.Getenv("PWD")
-	if pwd == "" {
-		pwd, _ = os.Getwd()
-	}
-	return pwd
 }

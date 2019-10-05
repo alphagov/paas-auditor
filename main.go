@@ -26,9 +26,6 @@ func main() {
 
 	cfg := NewConfigFromEnv()
 
-	if cfg.DatabaseURL == "" {
-		cfg.Logger.Fatal("DatabaseURL must be provided in Config", nil)
-	}
 	pq, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
 		cfg.Logger.Fatal("failed to connect to database", err)
