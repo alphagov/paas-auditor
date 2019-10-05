@@ -23,6 +23,13 @@ const (
 	DefaultQueryTimeout = 60 * time.Second
 )
 
+type EventDB interface {
+	Init() error
+	StoreCfAuditEvents(events []cfclient.Event) error
+	GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, error)
+	GetLatestCfEventTime() (*time.Time, error)
+}
+
 type EventStore struct {
 	db     *sql.DB
 	logger lager.Logger
