@@ -11,8 +11,10 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
-func FetchCFAuditEvents(cfg *FetcherConfig, pullEventsSince time.Time, results chan CFAuditEventResult) {
-	fetchEvents(cfg, startPageURL(pullEventsSince), results)
+type CFAuditEventFetcher = func(pullEventsSince time.Time, resultsChan chan CFAuditEventResult)
+
+func FetchCFAuditEvents(cfg *FetcherConfig, pullEventsSince time.Time, resultsChan chan CFAuditEventResult) {
+	fetchEvents(cfg, startPageURL(pullEventsSince), resultsChan)
 }
 
 type CFAuditEventResult struct {
@@ -28,8 +30,8 @@ func startPageURL(pullEventsSince time.Time) string {
 	return fmt.Sprintf("/v2/events?%s", q.Encode())
 }
 
-func fetchEvents(cfg *FetcherConfig, startPageURL string, results chan CFAuditEventResult) {
-	defer close(results)
+func fetchEvents(cfg *FetcherConfig, startPageURL string, resultsChan chan CFAuditEventResult) {
+	defer close(resultsChan)
 
 	logger := cfg.Logger.WithData(lager.Data{"start_page_url": startPageURL})
 	logger.Info("fetching")
@@ -44,11 +46,11 @@ func fetchEvents(cfg *FetcherConfig, startPageURL string, results chan CFAuditEv
 		nextPageURL, events, err = getPage(cfg.CFClient, nextPageURL)
 		if err != nil {
 			logger.Error("fetched.page.error", err)
-			results <- CFAuditEventResult{Err: err}
+			resultsChan <- CFAuditEventResult{Err: err}
 			return
 		}
 		logger.Info("fetched.page.ok", lager.Data{"event_count": len(events)})
-		results <- CFAuditEventResult{Events: events}
+		resultsChan <- CFAuditEventResult{Events: events}
 
 		time.Sleep(cfg.PaginationWaitTime)
 	}

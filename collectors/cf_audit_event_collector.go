@@ -13,14 +13,14 @@ import (
 type CfAuditEventCollector struct {
 	schedule        time.Duration
 	logger          lager.Logger
-	fetcherCfg      *fetchers.FetcherConfig
+	fetcher         CFAuditEventFetcher
 	eventDB         *db.EventStore
 	eventsCollected int
 }
 
-func NewCfAuditEventCollector(schedule time.Duration, logger lager.Logger, fetcherCfg *fetchers.FetcherConfig, eventDB *db.EventStore) *CfAuditEventCollector {
+func NewCfAuditEventCollector(schedule time.Duration, logger lager.Logger, fetcher CFAuditEventFetcher, eventDB *db.EventStore) *CfAuditEventCollector {
 	logger = logger.Session("cf-audit-event-collector")
-	return &CfAuditEventCollector{schedule, logger, fetcherCfg, eventDB}
+	return &CfAuditEventCollector{schedule, logger, fetcher, eventDB}
 }
 
 func (c *CfAuditEventCollector) Run(ctx context.Context) {
@@ -68,7 +68,7 @@ func (c *CfAuditEventCollector) collect(ctx context.Context, pullEventsSince tim
 	c.logger.Info("collect.start")
 
 	resultsChan := make(chan fetchers.CFAuditEventResult, 3)
-	go fetchers.FetchCFAuditEvents(c.fetcherCfg, pullEventsSince, resultsChan)
+	go c.fetcher(pullEventsSince, resultsChan)
 
 	for {
 		var events []cfclient.Event

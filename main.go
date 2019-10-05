@@ -48,16 +48,9 @@ func main() {
 		Logger:             cfg.Logger.Session("cf-audit-event-fetcher"),
 		PaginationWaitTime: cfg.PaginationWaitTime,
 	}
-
-	// lastRun, err := store.LastSeenEvent()
-	// if err != nil {
-	// 	cfg.Logger.Fatal("error finding last seen event", err)
-	// }
-	// if lastRun == nil {
-	// 	// If the database is empty, get the last week of data
-	// 	fourWeeksAgo := time.Now().AddDate(0, 0, -28)
-	// 	lastRun = &fourWeeksAgo
-	// }
-	collector := eventcollector.NewCfAuditEventCollector(cfg.Schedule, cfg.Logger, fetcherCfg, eventDB)
+	fetcher := func(pullEventsSince time.Time, resultsChan chan CFAuditEventResult) {
+		FetchCFAuditEvents(fetcherCfg, pullEventsSince, resultsChan)
+	}
+	collector := eventcollector.NewCfAuditEventCollector(cfg.Schedule, cfg.Logger, fetcher, eventDB)
 	collector.Run(ctx)
 }
