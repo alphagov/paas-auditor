@@ -1,4 +1,4 @@
-package eventcollector
+package collectors
 
 import (
 	"context"
@@ -60,7 +60,6 @@ func (c *CfAuditEventCollector) pullEventsSince(overlapBy time.Duration) (time.T
 
 	var pullEventsSince time.Time
 	if latestCFEventTime != nil {
-		// Pull an extra 5 seconds of events, to ensure we don't miss any
 		pullEventsSince = latestCFEventTime.Add(-overlapBy)
 	}
 	return pullEventsSince, nil
@@ -73,32 +72,25 @@ func (c *CfAuditEventCollector) collect(ctx context.Context, pullEventsSince tim
 	go fetchers.FetchCFAuditEvents(fetchCfg, pullEventsSince, resultsChan)
 
 	for {
-		events, err := collectOneResult(resultsChan)
-		if err != nil {
-			return err
-		}
-		if events == nil {
+		var events []cfclient.Event
+
+		select {
+		case <-ctx.Done():
 			return nil
+		case result, stillOpen := <-resultsChan:
+			if !stillOpen {
+				return nil
+			}
+			if result.Err != nil {
+				return result.Err
+			}
+			events = result.Events
 		}
+
 		err := c.eventDB.StoreCfAuditEvents(events)
 		if err != nil {
 			return err
 		}
 		c.eventsCollected += len(events)
-	}
-}
-
-func collectOneResult(resultsChan chan fetchers.CFAuditEventResult) ([]cfclient.Event, error) {
-	select {
-	case result, stillOpen := <-resultsChan:
-		if !stillOpen {
-			return nil, nil
-		}
-		if result.Err != nil {
-			return nil, result.Err
-		}
-		return result.Events, nil
-	case <-ctx.Done():
-		return nil, nil
 	}
 }
