@@ -69,7 +69,7 @@ func (c *CfAuditEventCollector) collect(ctx context.Context, pullEventsSince tim
 	c.logger.Info("collect.start")
 
 	resultsChan := make(chan fetchers.CFAuditEventResult, 3)
-	go fetchers.FetchCFAuditEvents(fetchCfg, pullEventsSince, resultsChan)
+	go fetchers.FetchCFAuditEvents(c.fetcherCfg, pullEventsSince, resultsChan)
 
 	for {
 		var events []cfclient.Event

@@ -163,7 +163,7 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 	return events, nil
 }
 
-func (s *EventStore) LastSeenEvent() (*time.Time, error) {
+func (s *EventStore) GetLatestCfEventTime() (*time.Time, error) {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
 	defer cancel()
 	row := s.db.QueryRowContext(ctx, `
