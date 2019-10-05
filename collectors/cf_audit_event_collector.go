@@ -6,107 +6,99 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	"github.com/alphagov/paas-auditor/db"
-	"github.com/alphagov/paas-auditor/eventfetchers"
+	"github.com/alphagov/paas-auditor/fetchers"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
-type state string
-
-const (
-	// Syncing state means that the collector has just started and need to immediately do a fetch to catchup
-	Syncing state = "sync"
-	// Scheduled means that we have caught up with latest events and are scheduled to run again later in Schedule time
-	Scheduled state = "waiting"
-)
-
 type CfAuditEventCollector struct {
-	state           state
 	waitTime        time.Duration
-	lastRun         time.Time
 	logger          lager.Logger
-	fetcher         *eventfetchers.CFAuditEventFetcher
-	store           *db.EventStore
+	fetcherCfg      *fetchers.FetcherConfig
+	eventDB         *db.EventStore
 	eventsCollected int
 }
 
-func NewCfAuditEventCollector(schedule, minWaitTime, initialWaitTime time.Duration, lastRun time.Time, logger lager.Logger, fetcher *eventfetchers.CFAuditEventFetcher, store *db.EventStore) *CfAuditEventCollector {
-	return &CfAuditEventCollector{
-		schedule:        schedule,
-		minWaitTime:     minWaitTime,
-		initialWaitTime: initialWaitTime,
-		lastRun:         lastRun,
-		logger:          logger.Session("cf-audit-event-collector"),
-		fetcher:         fetcher,
-		store:           store,
-		state:           Syncing,
-	}
+func NewCfAuditEventCollector(waitTime time.Duration, logger lager.Logger, fetcherCfg *fetchers.FetcherConfig, eventDB *db.EventStore) *CfAuditEventCollector {
+	logger = logger.Session("cf-audit-event-collector")
+	return &CfAuditEventCollector{waitTime, logger, fetcherCfg, eventDB}
 }
 
 // Run executes collect periodically the rate is dictated by Schedule and MinWaitTime
 func (c *CfAuditEventCollector) Run(ctx context.Context) {
-	c.logger.Info("started")
-	defer c.logger.Info("stopping")
-
 	for {
-		c.logger.Info("collecting")
-
-		startTime := time.Now()
-		collectedEventsCount, err := c.collect(ctx)
+		c.logger.Info("collect.start")
+		pullEventsSince, err := c.pullEventsSince(5 * time.Second)
 		if err != nil {
-			c.logger.Error("collected.error", err)
-			continue
+			c.logger.Error("collect.fetch.err", err)
+			return err
 		}
-		c.eventsCollected += collectedEventsCount
-		c.logger.Info("collected", lager.Data{
-			"count":    collectedEventsCount,
-			"duration": time.Since(startTime).String(),
-		})
 
+		c.logger.Info("collect.fetch", lager.Data{"pull_events_since": pullEventsSince})
+		startTime := time.Now()
+		err = c.collect(ctx, pullEventsSince)
+		if err != nil {
+			c.logger.Error("collect.fetch.err", err)
+			return err
+		}
+
+		c.logger.Info("collect.done", lager.Data{"fetch_duration": time.Since(startTime)})
 		select {
 		case <-time.After(c.waitTime):
 			continue
 		case <-ctx.Done():
-			c.logger.Error("context.done", err)
+			c.logger.Info("context.done")
 			return
 		}
 	}
 }
 
-// collect reads a batch of RawEvents from the EventFetcher and writes them to the EventStore
-func (c *CfAuditEventCollector) collect(ctx context.Context) (int, error) {
-	c.logger.Info("collect.start")
-	// Pull an extra 5 seconds of events, to ensure we don't miss any
-	pullEventsSince := c.lastRun.Add(-5 * time.Second)
-	eventsChan := make(chan []cfclient.Event)
-	errChan := make(chan error)
-	go c.fetcher.FetchEvents(ctx, pullEventsSince, eventsChan, errChan)
-
-	eventsCount := 0
-chanloop:
-	for {
-		select {
-		case events, stillOpen := <-eventsChan:
-			if !stillOpen {
-				c.logger.Info("collect.eventschan-closed")
-				break chanloop
-			}
-			eventsCount += len(events)
-			err := c.store.StoreCfAuditEvents(events)
-			if err != nil {
-				c.logger.Info("collect.store-error")
-				return eventsCount, err
-			}
-			c.logger.Info("collected.page")
-		case err, stillOpen := <-errChan:
-			if !stillOpen {
-				c.logger.Info("collect.errchan-closed")
-				break chanloop
-			}
-			return eventsCount, err
-		}
+func (c *CfAuditEventCollector) pullEventsSince(overlapBy time.Duration) (time.Time, error) {
+	latestCFEventTime, err := c.eventDB.GetLatestCfEventTime()
+	if err != nil {
+		return nil, err
 	}
 
-	c.lastRun = time.Now()
-	c.state = Scheduled
-	return eventsCount, nil
+	var pullEventsSince time.Time
+	if latestCFEventTime != nil {
+		// Pull an extra 5 seconds of events, to ensure we don't miss any
+		pullEventsSince = latestCFEventTime.Add(-overlapBy)
+	}
+	return pullEventsSince, nil
+}
+
+func (c *CfAuditEventCollector) collect(ctx context.Context, pullEventsSince time.Time) error {
+	c.logger.Info("collect.start")
+
+	resultsChan := make(chan fetchers.CFAuditEventResult, 3)
+	go fetchers.FetchCFAuditEvents(fetchCfg, pullEventsSince, resultsChan)
+
+	for {
+		events, err := collectOneResult(resultsChan)
+		if err != nil {
+			return err
+		}
+		if events == nil {
+			return nil
+		}
+		err := c.eventDB.StoreCfAuditEvents(events)
+		if err != nil {
+			return err
+		}
+		c.eventsCollected += len(events)
+	}
+}
+
+func collectOneResult(resultsChan chan fetchers.CFAuditEventResult) ([]cfclient.Event, error) {
+	select {
+	case result, stillOpen := <-resultsChan:
+		if !stillOpen {
+			return nil, nil
+		}
+		if result.Err != nil {
+			return nil, result.Err
+		}
+		return result.Events, nil
+	case <-ctx.Done():
+		return nil, nil
+	}
 }
