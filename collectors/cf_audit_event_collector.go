@@ -11,19 +11,18 @@ import (
 )
 
 type CfAuditEventCollector struct {
-	waitTime        time.Duration
+	schedule        time.Duration
 	logger          lager.Logger
 	fetcherCfg      *fetchers.FetcherConfig
 	eventDB         *db.EventStore
 	eventsCollected int
 }
 
-func NewCfAuditEventCollector(waitTime time.Duration, logger lager.Logger, fetcherCfg *fetchers.FetcherConfig, eventDB *db.EventStore) *CfAuditEventCollector {
+func NewCfAuditEventCollector(schedule time.Duration, logger lager.Logger, fetcherCfg *fetchers.FetcherConfig, eventDB *db.EventStore) *CfAuditEventCollector {
 	logger = logger.Session("cf-audit-event-collector")
-	return &CfAuditEventCollector{waitTime, logger, fetcherCfg, eventDB}
+	return &CfAuditEventCollector{schedule, logger, fetcherCfg, eventDB}
 }
 
-// Run executes collect periodically the rate is dictated by Schedule and MinWaitTime
 func (c *CfAuditEventCollector) Run(ctx context.Context) {
 	for {
 		c.logger.Info("collect.start")
@@ -43,7 +42,7 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) {
 
 		c.logger.Info("collect.done", lager.Data{"fetch_duration": time.Since(startTime)})
 		select {
-		case <-time.After(c.waitTime):
+		case <-time.After(c.schedule):
 			continue
 		case <-ctx.Done():
 			c.logger.Info("context.done")

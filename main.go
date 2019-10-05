@@ -58,6 +58,6 @@ func main() {
 	// 	fourWeeksAgo := time.Now().AddDate(0, 0, -28)
 	// 	lastRun = &fourWeeksAgo
 	// }
-	collector := eventcollector.NewCfAuditEventCollector(cfg.WaitTime, cfg.Logger, fetcherCfg, eventDB)
+	collector := eventcollector.NewCfAuditEventCollector(cfg.Schedule, cfg.Logger, fetcherCfg, eventDB)
 	collector.Run(ctx)
 }
