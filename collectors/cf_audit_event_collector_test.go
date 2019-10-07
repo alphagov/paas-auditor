@@ -1,4 +1,4 @@
-package fetchers
+package collectors
 
 import (
 	"bytes"
@@ -20,11 +20,14 @@ import (
 
 var _ = Describe("CFAuditEvents Collector", func() {
 	var err error
+	var fakeEventDB *FakeEventDB
+	var cFAuditEventFetcher CFAuditEventFetcher
 	var cfAuditEventCollector *CfAuditEventCollector
-	var fakeCFAuditEventFetcher CFAuditEventFetcher
 
 	BeforeEach(func() {
-
+		fakeEventDB := &FakeEventDB{}
+		cFAuditEventFetcher := fetchers.FetchCFAuditEvents
+		cfAuditEventCollector :=
 	})
 
 	Describe("pullEventsSince", func() {
