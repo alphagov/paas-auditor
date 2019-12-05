@@ -45,9 +45,9 @@ func main() {
 		Logger:             cfg.Logger.Session("cf-audit-event-fetcher"),
 		PaginationWaitTime: cfg.PaginationWaitTime,
 	}
-	fetcher := func(pullEventsSince time.Time, resultsChan chan CFAuditEventResult) {
-		FetchCFAuditEvents(fetcherCfg, pullEventsSince, resultsChan)
+	fetcher := func(pullEventsSince time.Time, resultsChan chan fetchers.CFAuditEventResult) {
+		fetchers.FetchCFAuditEvents(&fetcherCfg, pullEventsSince, resultsChan)
 	}
-	collector := eventcollector.NewCfAuditEventCollector(cfg.Schedule, cfg.Logger, fetcher, eventDB)
+	collector := collectors.NewCfAuditEventCollector(cfg.Schedule, cfg.Logger, fetcher, eventDB)
 	collector.Run(ctx)
 }

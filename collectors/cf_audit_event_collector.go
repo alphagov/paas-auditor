@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"code.cloudfoundry.org/lager"
@@ -13,17 +14,17 @@ import (
 type CfAuditEventCollector struct {
 	schedule        time.Duration
 	logger          lager.Logger
-	fetcher         CFAuditEventFetcher
+	fetcher         fetchers.CFAuditEventFetcher
 	eventDB         *db.EventStore
 	eventsCollected int
 }
 
-func NewCfAuditEventCollector(schedule time.Duration, logger lager.Logger, fetcher CFAuditEventFetcher, eventDB *db.EventStore) *CfAuditEventCollector {
+func NewCfAuditEventCollector(schedule time.Duration, logger lager.Logger, fetcher fetchers.CFAuditEventFetcher, eventDB *db.EventStore) *CfAuditEventCollector {
 	logger = logger.Session("cf-audit-event-collector")
-	return &CfAuditEventCollector{schedule, logger, fetcher, eventDB}
+	return &CfAuditEventCollector{schedule, logger, fetcher, eventDB, 0}
 }
 
-func (c *CfAuditEventCollector) Run(ctx context.Context) {
+func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 	for {
 		c.logger.Info("collect.start")
 		pullEventsSince, err := c.pullEventsSince(5 * time.Second)
@@ -46,22 +47,22 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) {
 			continue
 		case <-ctx.Done():
 			c.logger.Info("context.done")
-			return
+			return nil
 		}
 	}
 }
 
 func (c *CfAuditEventCollector) pullEventsSince(overlapBy time.Duration) (time.Time, error) {
-	latestCFEventTime, err := c.eventDB.GetLatestCfEventTime()
-	if err != nil {
-		return nil, err
-	}
+	// latestCFEventTime, err := c.eventDB.GetLatestCfEventTime()
+	// if err != nil {
+	// 	return time.Now(), err
+	// }
 
-	var pullEventsSince time.Time
-	if latestCFEventTime != nil {
-		pullEventsSince = (*latestCFEventTime).Add(-overlapBy)
-	}
-	return pullEventsSince, nil
+	// var pullEventsSince time.Time
+	// if latestCFEventTime != nil {
+	// 	pullEventsSince = (*latestCFEventTime).Add(-overlapBy)
+	// }
+	return time.Now(), fmt.Errorf("Unimplemented") // TODO(paroxp, tlwr)
 }
 
 func (c *CfAuditEventCollector) collect(ctx context.Context, pullEventsSince time.Time) error {
