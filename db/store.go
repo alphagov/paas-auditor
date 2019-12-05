@@ -79,7 +79,7 @@ func (s *EventStore) StoreCfAuditEvents(events []cfclient.Event) error {
 			insert into %s (
 				guid, created_at, event_type, actor, actor_type, actor_name, actor_username, actee, actee_type, actee_name, organization_guid, space_guid, metadata
 			) values (
-				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NULLIF($11, '')::uuid, NULLIF($12, '')::uuid
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NULLIF($11, '')::uuid, NULLIF($12, '')::uuid, $13
 			) on conflict do nothing
 		`, CfAuditEventsTable)
 		_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.OrganizationGUID, event.SpaceGUID, eventMetadataJSON)

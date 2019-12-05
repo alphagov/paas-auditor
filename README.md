@@ -1,5 +1,7 @@
 # paas-auditor
 
+🎵 `paas-billing` 2: Auditor Boogaloo 🎵
+
 ## Overview
 
 A Golang application that scrapes Cloud Controller's `/v2/events` endpoint for Audit Events and stores them in a Postgres database.
