@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/alphagov/paas-auditor/collectors"
 	"github.com/alphagov/paas-auditor/db"
-	"github.com/alphagov/paas-auditor/eventcollector"
-	"github.com/alphagov/paas-auditor/eventfetchers"
+	"github.com/alphagov/paas-auditor/fetchers"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
@@ -25,43 +25,29 @@ func main() {
 	}()
 
 	cfg := NewConfigFromEnv()
-	if cfg.DatabaseURL == "" {
-		cfg.Logger.Fatal("Store or DatabaseURL must be provided in Config", nil)
-	}
 
 	pq, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
 		cfg.Logger.Fatal("failed to connect to database", err)
 	}
-	store := db.NewEventStore(ctx, pq, cfg.Logger)
-	if err := store.Init(); err != nil {
-		cfg.Logger.Fatal("failed to initialise store", err)
+	eventDB := db.NewEventStore(ctx, pq, cfg.Logger)
+	if err := eventDB.Init(); err != nil {
+		cfg.Logger.Fatal("failed to initialise database", err)
 	}
 
-	lastRun, err := store.LastSeenEvent()
-	if err != nil {
-		cfg.Logger.Fatal("error finding last seen event", err)
-	}
-	if lastRun == nil {
-		// If the database is empty, get the last week of data
-		fourWeeksAgo := time.Now().AddDate(0, 0, -28)
-		lastRun = &fourWeeksAgo
-	}
-
-	cf, err := cfclient.NewClient(cfg.CFClientConfig)
+	cfClient, err := cfclient.NewClient(cfg.CFClientConfig)
 	if err != nil {
 		cfg.Logger.Fatal("failed to create CF client", err)
 	}
-	fetcher := eventfetchers.NewCFAuditEventFetcher(cf, cfg.Logger, cfg.PaginationWaitTime)
 
-	collector := eventcollector.NewCfAuditEventCollector(
-		cfg.Schedule,
-		cfg.MinWaitTime,
-		cfg.InitialWaitTime,
-		*lastRun,
-		cfg.Logger,
-		fetcher,
-		store,
-	)
+	fetcherCfg := fetchers.FetcherConfig{
+		CFClient:           cfClient,
+		Logger:             cfg.Logger.Session("cf-audit-event-fetcher"),
+		PaginationWaitTime: cfg.PaginationWaitTime,
+	}
+	fetcher := func(pullEventsSince time.Time, resultsChan chan CFAuditEventResult) {
+		FetchCFAuditEvents(fetcherCfg, pullEventsSince, resultsChan)
+	}
+	collector := eventcollector.NewCfAuditEventCollector(cfg.Schedule, cfg.Logger, fetcher, eventDB)
 	collector.Run(ctx)
 }

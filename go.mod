@@ -12,7 +12,11 @@ require (
 	github.com/lib/pq v0.0.0-20180327071824-d34b9ff171c2
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/onsi/ginkgo v1.6.0
+	github.com/onsi/gomega v1.4.3
+	github.com/satori/go.uuid v1.2.0
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 )
+
+replace github.com/cloudfoundry-community/go-cfclient => github.com/alphagov/paas-go-cfclient v0.0.0-20191004115637-b7491d6ab291
