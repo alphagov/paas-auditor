@@ -1,4 +1,4 @@
-package fetchers
+package fetchers_test
 
 import (
 	"fmt"
@@ -13,6 +13,8 @@ import (
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/alphagov/paas-auditor/pkg/fetchers"
 )
 
 const (
@@ -81,7 +83,7 @@ func randomEventPages(numberOfPages, eventsPerPage int) [][]cfclient.Event {
 }
 
 var _ = Describe("CFAuditEvents Fetcher", func() {
-	var cfg *FetcherConfig
+	var cfg *fetchers.FetcherConfig
 
 	BeforeEach(func() {
 		httpclient := &http.Client{Transport: &http.Transport{}}
@@ -119,7 +121,7 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 		logger := lager.NewLogger("fetcher-test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.INFO))
 
-		cfg = &FetcherConfig{
+		cfg = &fetchers.FetcherConfig{
 			CFClient:           cfClient,
 			Logger:             logger,
 			PaginationWaitTime: 0,
@@ -131,7 +133,7 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 			q := "timestamp>2019-10-04T12:40:43Z"
 			numberOfPages := 10
 
-			resultsChan := make(chan CFAuditEventResult, 10)
+			resultsChan := make(chan fetchers.CFAuditEventResult, 10)
 			eventPages := randomEventPages(numberOfPages, 5)
 			pullEventsSince := time.Date(2019, 10, 4, 12, 40, 43, 0, time.UTC)
 
@@ -173,14 +175,14 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 
 			go func() {
 				defer GinkgoRecover()
-				FetchCFAuditEvents(cfg, pullEventsSince, resultsChan)
+				fetchers.FetchCFAuditEvents(cfg, pullEventsSince, resultsChan)
 			}()
 
 			Eventually(httpmock.GetTotalCallCount).Should(Equal(numberOfPages + 2))
 
 			for page := 1; page <= numberOfPages; page++ {
 				Expect(resultsChan).To(Receive(
-					Equal(CFAuditEventResult{Events: eventPages[page-1]}),
+					Equal(fetchers.CFAuditEventResult{Events: eventPages[page-1]}),
 				))
 			}
 
