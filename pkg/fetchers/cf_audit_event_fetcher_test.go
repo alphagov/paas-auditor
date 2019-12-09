@@ -190,34 +190,6 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 		})
 	})
 
-	// Describe("startPageURL", func() {
-	// 	var nowURL string
-	// 	var parsedNowURL *url.URL
-
-	// 	BeforeEach(func() {
-	// 		exampleTime := time.Date(2019, 10, 4, 12, 40, 43, 0, time.UTC)
-	// 		nowURL = startPageURL(exampleTime)
-	// 		parsedNowURL, err = url.ParseRequestURI(nowURL)
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 	})
-
-	// 	It("should fetch from /v2/events", func() {
-	// 		Expect(parsedNowURL.EscapedPath()).To(Equal("/v2/events"))
-	// 	})
-
-	// 	It("should fetch 100 results per page", func() {
-	// 		Expect(parsedNowURL.Query()).To(HaveKey("results-per-page"))
-	// 		Expect(parsedNowURL.Query()["results-per-page"]).To(HaveLen(1))
-	// 		Expect(parsedNowURL.Query()["results-per-page"][0]).To(Equal("100"))
-	// 	})
-
-	// 	It("should fetch events from after the specified time", func() {
-	// 		Expect(parsedNowURL.Query()).To(HaveKey("q"))
-	// 		Expect(parsedNowURL.Query()["q"]).To(HaveLen(1))
-	// 		Expect(parsedNowURL.Query()["q"][0]).To(Equal("timestamp>2019-10-04T12:40:43Z"))
-	// 	})
-	// })
-
 	// Describe("fetchEvents", func() {
 	// 	It("fetches one page successfully", func() {
 	// 		events := randomEvents(100)
