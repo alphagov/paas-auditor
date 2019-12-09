@@ -345,26 +345,6 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 	// 		Expect(events[0].Type).To(Equal("audit.app.create"))
 	// 	})
 
-	// 	It("returns the URL of the next page", func() {
-	// 		fakeCFClient.DoRequestReturns(jsonStubHTTPResponse(200, cfclient.EventsResponse{
-	// 			Pages:   2,
-	// 			NextURL: "/v2/events?page=2",
-	// 		}), nil)
-
-	// 		nextUrl, _, err := getPage(fakeCFClient, "/v2/events")
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(nextUrl).To(Equal("/v2/events?page=2"))
-	// 	})
-
-	// 	It("returns an empty string if there is no next page", func() {
-	// 		fakeCFClient.DoRequestReturns(jsonStubHTTPResponse(200, cfclient.EventsResponse{NextURL: ""}), nil)
-
-	// 		// TODO: Add a few events and check they did come out as well as the empty nextUrl
-	// 		nextUrl, _, err := getPage(fakeCFClient, "/v2/events")
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(nextUrl).To(Equal(""))
-	// 	})
-
 	// 	It("returns an error if the request fails", func() {
 	// 		fakeCFClient.DoRequestReturns(nil, fmt.Errorf("test error"))
 
@@ -380,16 +360,4 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 	// 		Expect(err).To(HaveOccurred())
 	// 		Expect(err.Error()).To(HaveSuffix("401"))
 	// 	})
-
-	// 	It("only makes one GET request", func() {
-	// 		fakeCFClient.DoRequestReturns(jsonStubHTTPResponse(http.StatusOK, cfclient.EventsResponse{
-	// 			Pages:   2,
-	// 			NextURL: "/v2/events?page=2",
-	// 		}), nil)
-
-	// 		_, _, err := getPage(fakeCFClient, "/v2/events")
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(fakeCFClient.DoRequestCallCount()).To(Equal(1))
-	// 	})
-	// })
 })
