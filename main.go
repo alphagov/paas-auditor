@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/alphagov/paas-auditor/fetchers"
 	"github.com/alphagov/paas-auditor/pkg/collectors"
 	"github.com/alphagov/paas-auditor/pkg/db"
+	"github.com/alphagov/paas-auditor/pkg/fetchers"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
