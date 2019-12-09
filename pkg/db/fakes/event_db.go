@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alphagov/paas-auditor/db"
+	"github.com/alphagov/paas-auditor/pkg/db"
 	"github.com/cloudfoundry-community/go-cfclient"
 )
 

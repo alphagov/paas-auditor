@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/alphagov/paas-auditor/db"
 	"github.com/alphagov/paas-auditor/fetchers"
+	"github.com/alphagov/paas-auditor/pkg/db"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 )
 
