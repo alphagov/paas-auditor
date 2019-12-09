@@ -191,54 +191,6 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 	})
 
 	// Describe("fetchEvents", func() {
-	// 	It("fetches one page successfully", func() {
-	// 		events := randomEvents(100)
-	// 		fakeCFClient.DoRequestReturns(eventsStubHTTPResponse(1, "", events), nil)
-
-	// 		resultsChan := make(chan CFAuditEventResult)
-	// 		go func() {
-	// 			defer GinkgoRecover()
-	// 			fetchEvents(cfg, "/v2/events", resultsChan)
-	// 		}()
-
-	// 		result := <-resultsChan
-	// 		Expect(result.Err).ToNot(HaveOccurred())
-	// 		Expect(result.Events).To(Equal(events))
-
-	// 		Eventually(resultsChan).Should(BeClosed())
-	// 		Expect(fakeCFClient.DoRequestCallCount()).To(Equal(1))
-	// 	})
-
-	// 	It("fetches many pages successfully", func() {
-	// 		numberOfPages := 57
-	// 		eventPages := randomEvents(numberOfPages * 100)
-	// 		fakeCFClient.DoRequestStub = func(req *cfclient.Request) (*http.Response, error) {
-	// 			pageNumber := len(req.Url) - 1
-	// 			Expect(pageNumber).ToNot(BeNumerically(">=", numberOfPages))
-	// 			nextPage := req.Url + "+"
-	// 			if pageNumber+1 >= numberOfPages {
-	// 				nextPage = ""
-	// 			}
-	// 			events := eventPages[pageNumber*100 : pageNumber*100+100]
-	// 			return eventsStubHTTPResponse(numberOfPages, nextPage, events), nil
-	// 		}
-
-	// 		resultsChan := make(chan CFAuditEventResult)
-	// 		go func() {
-	// 			defer GinkgoRecover()
-	// 			fetchEvents(cfg, "/", resultsChan)
-	// 		}()
-
-	// 		for i := 0; i < numberOfPages; i += 1 {
-	// 			result := <-resultsChan
-	// 			Expect(result.Err).ToNot(HaveOccurred())
-	// 			Expect(result.Events).To(Equal(eventPages[i*100 : i*100+100]))
-	// 		}
-
-	// 		Eventually(resultsChan).Should(BeClosed())
-	// 		Expect(fakeCFClient.DoRequestCallCount()).To(Equal(numberOfPages))
-	// 	})
-
 	// 	It("outputs events before fetching the next page", func() {
 	// 		numberOfPages := 133
 	// 		eventPages := randomEventPages(numberOfPages, 5)
