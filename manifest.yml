@@ -1,14 +1,22 @@
 ---
 applications:
- - name: paas-auditor
-   memory: 256M
-   stack: cflinuxfs3
-   disk_quota: 100M
-   instances: 1
-   buildpack: go_buildpack
-   health-check-type: process
-   no-route: true
-   env:
-     GOVERSION: go1.13
-     GOPACKAGENAME: github.com/alphagov/paas-auditor
-   command: ./bin/paas-auditor
+  - name: paas-auditor
+    memory: 256M
+    disk_quota: 100M
+    stack: cflinuxfs3
+    instances: 1
+    buildpack: go_buildpack
+    health-check-type: process
+    no-route: true
+    command: ./bin/paas-auditor
+
+    services:
+      - auditor-db
+
+    env:
+      GOVERSION: go1.13
+      GOPACKAGENAME: github.com/alphagov/paas-auditor
+
+      CF_API_ADDRESS: ((cf_api_address))
+      CF_CLIENT_ID: ((cf_client_id))
+      CF_CLIENT_SECRET: ((cf_client_secret))
