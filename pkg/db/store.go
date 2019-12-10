@@ -265,7 +265,7 @@ func schemaDir() string {
 	if root == "" {
 		root, _ = os.Getwd()
 	}
-	return filepath.Join(root, "db", "sql")
+	return filepath.Join(root, "pkg", "db", "sql")
 }
 
 func schemaFile(filename string) string {
