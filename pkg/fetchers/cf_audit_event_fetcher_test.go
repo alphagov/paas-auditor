@@ -254,6 +254,45 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 			Eventually(resultsChan).Should(BeClosed())
 			Eventually(httpmock.GetTotalCallCount).Should(Equal(3))
 		})
+
+		It("returns an error and closes the chan when there is an non-200 response", func() {
+			expectedQ := "timestamp>2019-10-04T12:40:43Z"
+			pullEventsSince := time.Date(2019, 10, 4, 12, 40, 43, 0, time.UTC)
+
+			By("registering mocks")
+			// Mock the first two pages
+			for p := 1; p <= 2; p++ {
+				mockEventPageResponse(p, numberOfPages, true, expectedQ, eventPages[p])
+			}
+			// The next request will fail
+			httpmock.RegisterResponder(
+				"GET", fmt.Sprintf(`=~^%s.*\z`, cfAPIURL),
+				httpmock.NewJsonResponderOrPanic(500, `{"error": "sadpanda"}`),
+			)
+
+			By("fetching events")
+			go func() {
+				defer GinkgoRecover()
+				fetchers.FetchCFAuditEvents(cfg, pullEventsSince, resultsChan)
+			}()
+
+			By("expecting results via the channel")
+			for p := 1; p <= 2; p++ {
+				Eventually(resultsChan, "100ms", "1ms").Should(Receive(
+					Equal(fetchers.CFAuditEventResult{Events: eventPages[p]}),
+				))
+			}
+			Eventually(resultsChan, "100ms", "1ms").Should(Receive(WithTransform(
+				func(res fetchers.CFAuditEventResult) error { return res.Err },
+				MatchError(ContainSubstring(
+					"error requesting events: cfclient: HTTP error (500): 500",
+				)),
+			)))
+
+			By("checking we are finished")
+			Eventually(resultsChan).Should(BeClosed())
+			Eventually(httpmock.GetTotalCallCount).Should(Equal(3))
+		})
 	})
 
 	// Describe("fetchEvents", func() {
@@ -271,13 +310,5 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 	// 		Expect(events[0].GUID).To(Equal("a3e03dd4-3316-4d2e-a4ab-fb941f65e0bd"))
 	// 		Expect(events[0].CreatedAt).To(Equal("2019-09-02T20:02:08Z"))
 	// 		Expect(events[0].Type).To(Equal("audit.app.create"))
-	// 	})
-
-	// 	It("returns an error if the response has a non-200 status code", func() {
-	// 		fakeCFClient.DoRequestReturns(stubHTTPResponse(401, []byte("Unauthorized")), nil)
-
-	// 		_, _, err := getPage(fakeCFClient, "/v2/events")
-	// 		Expect(err).To(HaveOccurred())
-	// 		Expect(err.Error()).To(HaveSuffix("401"))
 	// 	})
 })
