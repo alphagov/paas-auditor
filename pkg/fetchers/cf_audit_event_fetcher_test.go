@@ -11,6 +11,7 @@ import (
 	"code.cloudfoundry.org/lager"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/jarcoal/httpmock"
+	"github.com/jinzhu/copier"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -66,12 +67,18 @@ func wrapEventsForResponse(
 
 	eventResources := make([]cfclient.EventResource, len(events))
 	for i, event := range events {
+		// We do not want CreatedAt and GUID as they are not in the API response
+		var eventWithoutFields cfclient.Event
+		copier.Copy(&eventWithoutFields, &event)
+		eventWithoutFields.GUID = ""
+		eventWithoutFields.CreatedAt = ""
+
 		eventResources[i] = cfclient.EventResource{
 			Meta: cfclient.Meta{
 				Guid:      event.GUID,
 				CreatedAt: event.CreatedAt,
 			},
-			Entity: event,
+			Entity: eventWithoutFields,
 		}
 	}
 
@@ -84,21 +91,29 @@ func wrapEventsForResponse(
 }
 
 func randomEvent() cfclient.Event {
-	createdAt := time.Unix(rand.Int63(), 0)
+	eventCreatedAt := time.Unix(rand.Int63(), 0).Format("2006-01-02T15:04:05Z")
+	eventGUID := uuid.NewV4().String()
+
 	return cfclient.Event{
-		GUID:             uuid.NewV4().String(),
-		Type:             "test.event.type",
-		CreatedAt:        createdAt.Format("2006-01-02T15:04:05Z"),
-		Actor:            fmt.Sprintf("test-actor-"),
-		ActorType:        fmt.Sprintf("test-actor-type-"),
-		ActorName:        fmt.Sprintf("test-actor-name-"),
-		ActorUsername:    fmt.Sprintf("test-actor-username-"),
-		Actee:            fmt.Sprintf("test-actee-"),
-		ActeeType:        fmt.Sprintf("test-actee-type-"),
-		ActeeName:        fmt.Sprintf("test-actee-name-"),
+		GUID:      eventGUID,
+		CreatedAt: eventCreatedAt,
+		Type:      "test.event.type",
+
+		Actor:         fmt.Sprintf("test-actor-"),
+		ActorType:     fmt.Sprintf("test-actor-type-"),
+		ActorName:     fmt.Sprintf("test-actor-name-"),
+		ActorUsername: fmt.Sprintf("test-actor-username-"),
+		Actee:         fmt.Sprintf("test-actee-"),
+		ActeeType:     fmt.Sprintf("test-actee-type-"),
+		ActeeName:     fmt.Sprintf("test-actee-name-"),
+
 		OrganizationGUID: uuid.NewV4().String(),
 		SpaceGUID:        uuid.NewV4().String(),
-		Metadata:         nil, //map[string]interface{},
+
+		Metadata: map[string]interface{}{
+			"guid":       eventGUID,
+			"created_at": eventCreatedAt,
+		},
 	}
 }
 
@@ -294,21 +309,4 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 			Eventually(httpmock.GetTotalCallCount).Should(Equal(3))
 		})
 	})
-
-	// Describe("fetchEvents", func() {
-	// Describe("getPage", func() {
-	// 	It("returns events with the GUID and CreatedAt fields set", func() {
-	// 		fakeCFClient.DoRequestReturns(eventsStubHTTPResponse(1, "", []cfclient.Event{cfclient.Event{
-	// 			GUID:      "a3e03dd4-3316-4d2e-a4ab-fb941f65e0bd",
-	// 			CreatedAt: "2019-09-02T20:02:08Z",
-	// 			Type:      "audit.app.create",
-	// 		}}), nil)
-
-	// 		_, events, err := getPage(fakeCFClient, "/v2/events")
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(events).To(HaveLen(1))
-	// 		Expect(events[0].GUID).To(Equal("a3e03dd4-3316-4d2e-a4ab-fb941f65e0bd"))
-	// 		Expect(events[0].CreatedAt).To(Equal("2019-09-02T20:02:08Z"))
-	// 		Expect(events[0].Type).To(Equal("audit.app.create"))
-	// 	})
 })
