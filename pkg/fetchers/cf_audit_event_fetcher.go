@@ -64,6 +64,7 @@ func getPage(cfClient cfclient.CloudFoundryClient, url string) (string, []cfclie
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		// This only occurs when the status code is < 400
 		return "", nil, fmt.Errorf("request failed with status code %d", resp.StatusCode)
 	}
 

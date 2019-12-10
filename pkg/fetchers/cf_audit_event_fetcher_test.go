@@ -282,7 +282,7 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 			// The next request will fail
 			httpmock.RegisterResponder(
 				"GET", fmt.Sprintf(`=~^%s.*\z`, cfAPIURL),
-				httpmock.NewJsonResponderOrPanic(500, `{"error": "sadpanda"}`),
+				httpmock.NewJsonResponderOrPanic(201, `{"error": "sadpanda"}`),
 			)
 
 			By("fetching events")
@@ -299,9 +299,7 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 			}
 			Eventually(resultsChan, "100ms", "1ms").Should(Receive(WithTransform(
 				func(res fetchers.CFAuditEventResult) error { return res.Err },
-				MatchError(ContainSubstring(
-					"error requesting events: cfclient: HTTP error (500): 500",
-				)),
+				MatchError(ContainSubstring("with status code 201")),
 			)))
 
 			By("checking we are finished")
