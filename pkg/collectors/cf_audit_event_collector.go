@@ -44,8 +44,6 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 			lsession.Info("done")
 			return nil
 		case <-time.After(c.schedule):
-			continue
-		default:
 			startTime := time.Now()
 
 			resultsChan := make(chan fetchers.CFAuditEventResult, 3)

@@ -46,7 +46,7 @@ var _ = Describe("CfAuditEventCollector Run", func() {
 		}
 
 		coll = collectors.NewCfAuditEventCollector(
-			100*time.Millisecond,
+			10*time.Millisecond,
 			logger,
 			fetcher,
 			eventDB,
