@@ -23,116 +23,6 @@ const (
 	uaaAPIURL = "http://uaa.api"
 )
 
-func mockEventPageResponse(
-	page int, totalPages int, addNextURL bool,
-	expectedQ string,
-	events []cfclient.Event,
-) {
-	var nextURL string
-	mockURL := fmt.Sprintf("%s/v2/events", cfAPIURL)
-
-	expectedQuery := url.Values{
-		"q":                []string{expectedQ},
-		"results-per-page": []string{"100"},
-	}
-
-	if page > 1 {
-		expectedQuery["page"] = []string{fmt.Sprintf("%d", page)}
-	}
-
-	if addNextURL {
-		nextURLQuery := url.Values{
-			"q":                []string{expectedQ},
-			"results-per-page": []string{"100"},
-		}
-
-		nextURLQuery["page"] = []string{fmt.Sprintf("%d", page+1)}
-
-		nextURL = fmt.Sprintf(
-			"/v2/events?%s", nextURLQuery.Encode(),
-		)
-	}
-
-	resp := httpmock.NewJsonResponderOrPanic(
-		200, wrapEventsForResponse(totalPages, nextURL, events),
-	)
-	httpmock.RegisterResponderWithQuery("GET", mockURL, expectedQuery, resp)
-}
-
-func wrapEventsForResponse(
-	pages int,
-	nextURL string,
-	events []cfclient.Event,
-) cfclient.EventsResponse {
-
-	eventResources := make([]cfclient.EventResource, len(events))
-	for i, event := range events {
-		// We do not want CreatedAt and GUID as they are not in the API response
-		var eventWithoutFields cfclient.Event
-		copier.Copy(&eventWithoutFields, &event)
-		eventWithoutFields.GUID = ""
-		eventWithoutFields.CreatedAt = ""
-
-		eventResources[i] = cfclient.EventResource{
-			Meta: cfclient.Meta{
-				Guid:      event.GUID,
-				CreatedAt: event.CreatedAt,
-			},
-			Entity: eventWithoutFields,
-		}
-	}
-
-	return cfclient.EventsResponse{
-		TotalResults: len(eventResources),
-		Pages:        pages,
-		NextURL:      nextURL,
-		Resources:    eventResources,
-	}
-}
-
-func randomEvent() cfclient.Event {
-	eventCreatedAt := time.Unix(rand.Int63(), 0).Format("2006-01-02T15:04:05Z")
-	eventGUID := uuid.NewV4().String()
-
-	return cfclient.Event{
-		GUID:      eventGUID,
-		CreatedAt: eventCreatedAt,
-		Type:      "test.event.type",
-
-		Actor:         fmt.Sprintf("test-actor-"),
-		ActorType:     fmt.Sprintf("test-actor-type-"),
-		ActorName:     fmt.Sprintf("test-actor-name-"),
-		ActorUsername: fmt.Sprintf("test-actor-username-"),
-		Actee:         fmt.Sprintf("test-actee-"),
-		ActeeType:     fmt.Sprintf("test-actee-type-"),
-		ActeeName:     fmt.Sprintf("test-actee-name-"),
-
-		OrganizationGUID: uuid.NewV4().String(),
-		SpaceGUID:        uuid.NewV4().String(),
-
-		Metadata: map[string]interface{}{
-			"guid":       eventGUID,
-			"created_at": eventCreatedAt,
-		},
-	}
-}
-
-func randomEvents(n int) []cfclient.Event {
-	events := make([]cfclient.Event, n)
-	for i := 0; i < n; i++ {
-		events[i] = randomEvent()
-	}
-	return events
-}
-
-func randomEventPages(numberOfPages, eventsPerPage int) [][]cfclient.Event {
-	eventPages := make([][]cfclient.Event, numberOfPages)
-	for page := 0; page < numberOfPages; page++ {
-		eventPages[page] = randomEvents(eventsPerPage)
-	}
-	return eventPages
-}
-
 var _ = Describe("CFAuditEvents Fetcher", func() {
 	var cfg *fetchers.FetcherConfig
 
@@ -308,3 +198,113 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 		})
 	})
 })
+
+func mockEventPageResponse(
+	page int, totalPages int, addNextURL bool,
+	expectedQ string,
+	events []cfclient.Event,
+) {
+	var nextURL string
+	mockURL := fmt.Sprintf("%s/v2/events", cfAPIURL)
+
+	expectedQuery := url.Values{
+		"q":                []string{expectedQ},
+		"results-per-page": []string{"100"},
+	}
+
+	if page > 1 {
+		expectedQuery["page"] = []string{fmt.Sprintf("%d", page)}
+	}
+
+	if addNextURL {
+		nextURLQuery := url.Values{
+			"q":                []string{expectedQ},
+			"results-per-page": []string{"100"},
+		}
+
+		nextURLQuery["page"] = []string{fmt.Sprintf("%d", page+1)}
+
+		nextURL = fmt.Sprintf(
+			"/v2/events?%s", nextURLQuery.Encode(),
+		)
+	}
+
+	resp := httpmock.NewJsonResponderOrPanic(
+		200, wrapEventsForResponse(totalPages, nextURL, events),
+	)
+	httpmock.RegisterResponderWithQuery("GET", mockURL, expectedQuery, resp)
+}
+
+func wrapEventsForResponse(
+	pages int,
+	nextURL string,
+	events []cfclient.Event,
+) cfclient.EventsResponse {
+
+	eventResources := make([]cfclient.EventResource, len(events))
+	for i, event := range events {
+		// We do not want CreatedAt and GUID as they are not in the API response
+		var eventWithoutFields cfclient.Event
+		copier.Copy(&eventWithoutFields, &event)
+		eventWithoutFields.GUID = ""
+		eventWithoutFields.CreatedAt = ""
+
+		eventResources[i] = cfclient.EventResource{
+			Meta: cfclient.Meta{
+				Guid:      event.GUID,
+				CreatedAt: event.CreatedAt,
+			},
+			Entity: eventWithoutFields,
+		}
+	}
+
+	return cfclient.EventsResponse{
+		TotalResults: len(eventResources),
+		Pages:        pages,
+		NextURL:      nextURL,
+		Resources:    eventResources,
+	}
+}
+
+func randomEvent() cfclient.Event {
+	eventCreatedAt := time.Unix(rand.Int63(), 0).Format("2006-01-02T15:04:05Z")
+	eventGUID := uuid.NewV4().String()
+
+	return cfclient.Event{
+		GUID:      eventGUID,
+		CreatedAt: eventCreatedAt,
+		Type:      "test.event.type",
+
+		Actor:         fmt.Sprintf("test-actor-"),
+		ActorType:     fmt.Sprintf("test-actor-type-"),
+		ActorName:     fmt.Sprintf("test-actor-name-"),
+		ActorUsername: fmt.Sprintf("test-actor-username-"),
+		Actee:         fmt.Sprintf("test-actee-"),
+		ActeeType:     fmt.Sprintf("test-actee-type-"),
+		ActeeName:     fmt.Sprintf("test-actee-name-"),
+
+		OrganizationGUID: uuid.NewV4().String(),
+		SpaceGUID:        uuid.NewV4().String(),
+
+		Metadata: map[string]interface{}{
+			"guid":       eventGUID,
+			"created_at": eventCreatedAt,
+		},
+	}
+}
+
+func randomEvents(n int) []cfclient.Event {
+	events := make([]cfclient.Event, n)
+	for i := 0; i < n; i++ {
+		events[i] = randomEvent()
+	}
+	return events
+}
+
+func randomEventPages(numberOfPages, eventsPerPage int) [][]cfclient.Event {
+	eventPages := make([][]cfclient.Event, numberOfPages)
+	for page := 0; page < numberOfPages; page++ {
+		eventPages[page] = randomEvents(eventsPerPage)
+	}
+	return eventPages
+}
