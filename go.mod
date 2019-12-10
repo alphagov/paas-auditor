@@ -10,5 +10,6 @@ require (
 	github.com/lib/pq v0.0.0-20180327071824-d34b9ff171c2
 	github.com/onsi/ginkgo v1.6.0
 	github.com/onsi/gomega v1.4.3
+	github.com/prometheus/client_golang v1.2.1
 	github.com/satori/go.uuid v1.2.0
 )

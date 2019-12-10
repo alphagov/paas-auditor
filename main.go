@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -12,6 +15,7 @@ import (
 	"github.com/alphagov/paas-auditor/pkg/db"
 	"github.com/alphagov/paas-auditor/pkg/fetchers"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -49,5 +53,41 @@ func main() {
 		fetchers.FetchCFAuditEvents(&fetcherCfg, pullEventsSince, resultsChan)
 	}
 	collector := collectors.NewCfAuditEventCollector(cfg.Schedule, cfg.Logger, fetcher, eventDB)
-	collector.Run(ctx)
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mux.Handle("/metrics", promhttp.Handler())
+
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.PrometheusListenPort),
+		Handler: mux,
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		err := collector.Run(ctx)
+		if err != nil {
+			cfg.Logger.Error("Collector encountered error: %s", err)
+		}
+		shutdown()
+		os.Exit(1)
+	}()
+
+	wg.Add(1)
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			cfg.Logger.Error("Server encountered error: %s", err)
+		}
+		shutdown()
+		os.Exit(1)
+	}()
+
+	wg.Wait()
 }

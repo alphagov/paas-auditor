@@ -6,9 +6,10 @@ applications:
     stack: cflinuxfs3
     instances: 1
     buildpack: go_buildpack
-    health-check-type: process
-    no-route: true
     command: ./bin/paas-auditor
+
+    health-check-type: http
+    health-check-http-endpoint: /health
 
     services:
       - auditor-db

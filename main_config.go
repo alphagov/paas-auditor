@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +18,8 @@ type Config struct {
 	CFClientConfig     *cfclient.Config
 	Schedule           time.Duration
 	PaginationWaitTime time.Duration
+
+	PrometheusListenPort uint
 }
 
 func NewConfigFromEnv() Config {
@@ -36,8 +39,11 @@ func NewConfigFromEnv() Config {
 				Timeout: 30 * time.Second,
 			},
 		},
+
 		Schedule:           getEnvWithDefaultDuration("SCHEDULE", 5*time.Minute),
 		PaginationWaitTime: getEnvWithDefaultDuration("FETCHER_PAGINATION_WAIT_TIME", 200*time.Millisecond),
+
+		PrometheusListenPort: getEnvWithDefaultInt("PORT", 9299),
 	}
 }
 
@@ -59,6 +65,18 @@ func getEnvWithDefaultString(k string, def string) string {
 		return def
 	}
 	return v
+}
+
+func getEnvWithDefaultInt(k string, def uint) uint {
+	v := os.Getenv(k)
+	if v == "" {
+		return def
+	}
+	d, err := strconv.ParseUint(v, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	return uint(d)
 }
 
 func getDefaultLogger() lager.Logger {
