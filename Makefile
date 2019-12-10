@@ -1,3 +1,5 @@
+.PHONY: generate-mocks run-dev-exports clean
+
 DATABASE_URL ?= postgres://postgres:@localhost:5432/?sslmode=disable
 TEST_DATABASE_URL ?= postgres://postgres:@localhost:5432/?sslmode=disable
 CF_API_ADDRESS ?= $(shell cf target | awk '/api endpoint/ {print $$3}')
@@ -23,9 +25,12 @@ run-dev-exports:
 clean:
 	rm -f bin/paas-auditor
 
-start_postgres_docker:
+start-postgres-docker:
 	docker run --rm -p 5432:5432 --name postgres -e POSTGRES_PASSWORD= -d postgres:9.5
 
-stop_postgres_docker:
+stop-postgres-docker:
 	docker stop postgres
 	docker rm postgres
+
+generate-mocks:
+	counterfeiter -o pkg/db/fakes/event_db.go pkg/db EventDB
