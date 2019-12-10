@@ -22,9 +22,45 @@ const (
 	uaaAPIURL = "http://uaa.api"
 )
 
+func mockEventPageResponse(
+	page int, totalPages int, addNextURL bool,
+	expectedQ string,
+	events []cfclient.Event,
+) {
+	var nextURL string
+	mockURL := fmt.Sprintf("%s/v2/events", cfAPIURL)
+
+	expectedQuery := url.Values{
+		"q":                []string{expectedQ},
+		"results-per-page": []string{"100"},
+	}
+
+	if page > 1 {
+		expectedQuery["page"] = []string{fmt.Sprintf("%d", page)}
+	}
+
+	if addNextURL {
+		nextURLQuery := url.Values{
+			"q":                []string{expectedQ},
+			"results-per-page": []string{"100"},
+		}
+
+		nextURLQuery["page"] = []string{fmt.Sprintf("%d", page+1)}
+
+		nextURL = fmt.Sprintf(
+			"/v2/events?%s", nextURLQuery.Encode(),
+		)
+	}
+
+	resp := httpmock.NewJsonResponderOrPanic(
+		200, wrapEventsForResponse(totalPages, nextURL, events),
+	)
+	httpmock.RegisterResponderWithQuery("GET", mockURL, expectedQuery, resp)
+}
+
 func wrapEventsForResponse(
 	pages int,
-	nextUrl string,
+	nextURL string,
 	events []cfclient.Event,
 ) cfclient.EventsResponse {
 
@@ -42,7 +78,7 @@ func wrapEventsForResponse(
 	return cfclient.EventsResponse{
 		TotalResults: len(eventResources),
 		Pages:        pages,
-		NextURL:      nextUrl,
+		NextURL:      nextURL,
 		Resources:    eventResources,
 	}
 }
@@ -68,7 +104,7 @@ func randomEvent() cfclient.Event {
 
 func randomEvents(n int) []cfclient.Event {
 	events := make([]cfclient.Event, n)
-	for i := 0; i < n; i += 1 {
+	for i := 0; i < n; i++ {
 		events[i] = randomEvent()
 	}
 	return events
@@ -76,7 +112,7 @@ func randomEvents(n int) []cfclient.Event {
 
 func randomEventPages(numberOfPages, eventsPerPage int) [][]cfclient.Event {
 	eventPages := make([][]cfclient.Event, numberOfPages)
-	for page := 0; page < numberOfPages; page += 1 {
+	for page := 0; page < numberOfPages; page++ {
 		eventPages[page] = randomEvents(eventsPerPage)
 	}
 	return eventPages
@@ -132,46 +168,21 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 
 	Describe("FetchCFAuditEvents", func() {
 		It("appears to work", func() {
-			q := "timestamp>2019-10-04T12:40:43Z"
-			numberOfPages := 10
-
-			resultsChan := make(chan fetchers.CFAuditEventResult, 10)
-			eventPages := randomEventPages(numberOfPages, 5)
+			expectedQ := "timestamp>2019-10-04T12:40:43Z"
 			pullEventsSince := time.Date(2019, 10, 4, 12, 40, 43, 0, time.UTC)
 
-			for mockIndex := 1; mockIndex <= numberOfPages; mockIndex++ {
+			numberOfPages := 10
 
-				query := url.Values{
-					"q":                []string{q},
-					"results-per-page": []string{"100"},
-				}
+			resultsChan := make(chan fetchers.CFAuditEventResult, numberOfPages)
+			eventPages := randomEventPages(numberOfPages, 5)
 
-				if mockIndex > 1 {
-					query["page"] = []string{fmt.Sprintf("%d", mockIndex)}
-				}
+			for page := 1; page <= numberOfPages; page++ {
+				thereAreMorePages := page != numberOfPages
 
-				nextURL := ""
-
-				if mockIndex < numberOfPages {
-					nextURLQuery := url.Values{
-						"q":                []string{q},
-						"results-per-page": []string{"100"},
-					}
-
-					nextURLQuery["page"] = []string{fmt.Sprintf("%d", mockIndex+1)}
-
-					nextURL = fmt.Sprintf(
-						"/v2/events?%s", nextURLQuery.Encode(),
-					)
-				}
-
-				httpmock.RegisterResponderWithQuery(
-					"GET",
-					fmt.Sprintf("%s/v2/events", cfAPIURL),
-					query,
-					httpmock.NewJsonResponderOrPanic(200, wrapEventsForResponse(
-						numberOfPages, nextURL, eventPages[mockIndex-1],
-					)),
+				mockEventPageResponse(
+					page, numberOfPages, thereAreMorePages,
+					expectedQ,
+					eventPages[page-1],
 				)
 			}
 
