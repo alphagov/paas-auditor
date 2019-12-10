@@ -118,13 +118,15 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
+		httpmock.Reset() // Reset mock after client creation to clear call count
+
 		logger := lager.NewLogger("fetcher-test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.INFO))
 
 		cfg = &fetchers.FetcherConfig{
 			CFClient:           cfClient,
 			Logger:             logger,
-			PaginationWaitTime: 0,
+			PaginationWaitTime: 10 * time.Millisecond,
 		}
 	})
 
@@ -178,49 +180,21 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 				fetchers.FetchCFAuditEvents(cfg, pullEventsSince, resultsChan)
 			}()
 
-			Eventually(httpmock.GetTotalCallCount).Should(Equal(numberOfPages + 2))
-
 			for page := 1; page <= numberOfPages; page++ {
-				Expect(resultsChan).To(Receive(
+				Eventually(resultsChan, "100ms", "1ms").Should(Receive(
 					Equal(fetchers.CFAuditEventResult{Events: eventPages[page-1]}),
 				))
+
+				Expect(httpmock.GetTotalCallCount()).To(Equal(page))
 			}
 
+			By("checking we are finished")
 			Eventually(resultsChan).Should(BeClosed())
+			Eventually(httpmock.GetTotalCallCount).Should(Equal(numberOfPages))
 		})
 	})
 
 	// Describe("fetchEvents", func() {
-	// 	It("outputs events before fetching the next page", func() {
-	// 		numberOfPages := 133
-	// 		eventPages := randomEventPages(numberOfPages, 5)
-	// 		resultsChan := make(chan CFAuditEventResult, 10)
-
-	// 		fakeCFClient.DoRequestStub = func(req *cfclient.Request) (*http.Response, error) {
-	// 			page, err := strconv.Atoi(req.Url[1:])
-	// 			Expect(err).ToNot(HaveOccurred())
-	// 			Expect(page).ToNot(BeNumerically(">=", numberOfPages))
-
-	// 			Expect(resultsChan).To(Receive(Equal(CFAuditEventResult{Events: eventPages[page-1]})))
-	// 			Expect(resultsChan).ToNot(Receive())
-
-	// 			nextPageUrl := fmt.Sprintf("/%d", page+1)
-	// 			if page+1 >= numberOfPages {
-	// 				nextPageUrl = ""
-	// 			}
-	// 			return eventsStubHTTPResponse(numberOfPages, nextPageUrl, eventPages[page]), nil
-	// 		}
-
-	// 		resultsChan <- CFAuditEventResult{Events: eventPages[0]}
-	// 		go func() {
-	// 			defer GinkgoRecover()
-	// 			fetchEvents(cfg, "/1", resultsChan)
-	// 		}()
-
-	// 		Eventually(fakeCFClient.DoRequestCallCount).Should(Equal(numberOfPages - 1))
-	// 		Eventually(resultsChan).Should(BeClosed())
-	// 	})
-
 	// 	It("stops fetching pages when an error is encountered", func() {
 	// 		resultsChan := make(chan CFAuditEventResult, 10)
 	// 		pageOneEvents := randomEvents(10)
@@ -245,41 +219,6 @@ var _ = Describe("CFAuditEvents Fetcher", func() {
 	// 		})))
 	// 		Eventually(resultsChan).Should(BeClosed())
 	// 	})
-
-	// 	It("sleeps between fetching pages", func() {
-	// 		cfg.PaginationWaitTime = 300 * time.Millisecond
-	// 		numberOfPages := 5
-	// 		resultsChan := make(chan CFAuditEventResult, 10)
-
-	// 		fakeCFClient.DoRequestStub = func(req *cfclient.Request) (*http.Response, error) {
-	// 			page, err := strconv.Atoi(req.Url[1:])
-	// 			Expect(err).ToNot(HaveOccurred())
-	// 			Expect(page).ToNot(BeNumerically(">=", numberOfPages))
-
-	// 			nextPageUrl := fmt.Sprintf("/%d", page+1)
-	// 			if page+1 >= numberOfPages {
-	// 				nextPageUrl = ""
-	// 			}
-	// 			return eventsStubHTTPResponse(numberOfPages, nextPageUrl, randomEvents(5)), nil
-	// 		}
-
-	// 		go func() {
-	// 			defer GinkgoRecover()
-	// 			fetchEvents(cfg, "/0", resultsChan)
-	// 		}()
-
-	// 		<-resultsChan
-	// 		last := time.Now()
-
-	// 		for page := 0; page < numberOfPages; page += 1 {
-	// 			result := <-resultsChan
-	// 			now := time.Now()
-	// 			Expect(result.Err).ToNot(HaveOccurred())
-	// 			Expect(now).ToNot(BeTemporally("~", last, cfg.PaginationWaitTime))
-	// 			last = now
-	// 		}
-	// 	})
-	// })
 
 	// Describe("getPage", func() {
 	// 	It("returns events with the GUID and CreatedAt fields set", func() {
