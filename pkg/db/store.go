@@ -27,9 +27,13 @@ const (
 
 type EventDB interface {
 	Init() error
+
 	StoreCfAuditEvents(events []cfclient.Event) error
 	GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, error)
 	GetLatestCfEventTime() (*time.Time, error)
+
+	GetUnshippedCfAuditEventsForShipper(shipperName string) ([]cfclient.Event, error)
+	UpdateShipperCursor(shipperName string, shipperTime string, shippedID string) error
 }
 
 type EventStore struct {
@@ -254,7 +258,7 @@ func (s *EventStore) GetUnshippedCfAuditEventsForShipper(shipperName string) ([]
 	return events, nil
 }
 
-func (s *EventStore) UpdateShipperCursor(shipperName string, shipperTime time.Time, shippedID string) error {
+func (s *EventStore) UpdateShipperCursor(shipperName string, shipperTime string, shippedID string) error {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultStoreTimeout)
 	defer cancel()
 	tx, err := s.db.BeginTx(ctx, nil)
