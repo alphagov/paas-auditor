@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS cf_audit_events (
 
 CREATE INDEX IF NOT EXISTS cf_audit_events_id_idx ON cf_audit_events (id);
 CREATE INDEX IF NOT EXISTS cf_audit_events_guid_idx ON cf_audit_events (guid);
+CREATE INDEX IF NOT EXISTS cf_audit_events_created_at_idx ON cf_audit_events (created_at);
 CREATE INDEX IF NOT EXISTS cf_audit_events_state_organization_guid_idx ON cf_audit_events (organization_guid);
 CREATE INDEX IF NOT EXISTS cf_audit_events_state_space_guid_idx ON cf_audit_events (space_guid);
 CREATE INDEX IF NOT EXISTS cf_audit_events_state_event_type_idx ON cf_audit_events (event_type);
