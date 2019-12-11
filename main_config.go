@@ -19,7 +19,7 @@ type Config struct {
 	Schedule           time.Duration
 	PaginationWaitTime time.Duration
 
-	PrometheusListenPort uint
+	ListenPort uint
 }
 
 func NewConfigFromEnv() Config {
@@ -43,7 +43,7 @@ func NewConfigFromEnv() Config {
 		Schedule:           getEnvWithDefaultDuration("SCHEDULE", 5*time.Minute),
 		PaginationWaitTime: getEnvWithDefaultDuration("FETCHER_PAGINATION_WAIT_TIME", 200*time.Millisecond),
 
-		PrometheusListenPort: getEnvWithDefaultInt("PORT", 9299),
+		ListenPort: getEnvWithDefaultInt("PORT", 9299),
 	}
 }
 

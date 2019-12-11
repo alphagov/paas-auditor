@@ -63,7 +63,7 @@ func main() {
 	mux.Handle("/metrics", promhttp.Handler())
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.PrometheusListenPort),
+		Addr:    fmt.Sprintf(":%d", cfg.ListenPort),
 		Handler: mux,
 	}
 
