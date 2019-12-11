@@ -18,6 +18,8 @@ import (
 
 const (
 	CfAuditEventsTable  = "cf_audit_events"
+	ShipperCursorsTable = "shipper_cursors"
+
 	DefaultInitTimeout  = 15 * time.Minute
 	DefaultStoreTimeout = 10 * time.Minute
 	DefaultQueryTimeout = 60 * time.Second
@@ -50,11 +52,13 @@ func (s *EventStore) Init() error {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultInitTimeout)
 	defer cancel()
 
-	if err := s.runSQLFilesInTransaction(
-		ctx,
+	for _, filename := range []string{
 		"create_cf_audit_events.sql",
-	); err != nil {
-		return err
+		"create_shipper_cursors.sql",
+	} {
+		if err := s.runSQLFilesInTransaction(ctx, filename); err != nil {
+			return err
+		}
 	}
 
 	s.logger.Info("initialized")
@@ -125,8 +129,8 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 			actee,
 			actee_type,
 			actee_name,
-			organization_guid AS text,
-			space_guid AS text,
+			coalesce(organization_guid::text, ''),
+			coalesce(space_guid::text, ''),
 			metadata
 		from
 			` + CfAuditEventsTable + `
@@ -168,6 +172,113 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 		events = append(events, event)
 	}
 	return events, nil
+}
+
+func (s *EventStore) GetUnshippedCfAuditEventsForShipper(shipperName string) ([]cfclient.Event, error) {
+	events := []cfclient.Event{}
+	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
+	defer cancel()
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	rows, err := tx.Query(`
+		with last_shipped_event as (
+			select updated_at, shipped_id
+			from
+				` + ShipperCursorsTable + ` where name = '` + shipperName + `'
+			union
+				select (date '1970 1 1')::timestamptz, ''
+			order by updated_at desc
+			limit 1
+		)
+		select
+			guid,
+			created_at,
+			event_type,
+			actor,
+			actor_type,
+			actor_name,
+			actor_username,
+			actee,
+			actee_type,
+			actee_name,
+			coalesce(organization_guid::text, ''),
+			coalesce(space_guid::text, ''),
+			metadata
+		from
+			` + CfAuditEventsTable + `
+		where
+				created_at >= (select updated_at from last_shipped_event)
+			and
+				guid::text != (select shipped_id from last_shipped_event)
+		order by
+			created_at asc,
+			id asc
+		limit 100
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		event := cfclient.Event{}
+		bytesOfMetadataJSON := []byte{}
+		err = rows.Scan(
+			&event.GUID,
+			&event.CreatedAt,
+			&event.Type,
+			&event.Actor,
+			&event.ActorType,
+			&event.ActorName,
+			&event.ActorUsername,
+			&event.Actee,
+			&event.ActeeType,
+			&event.ActeeName,
+			&event.OrganizationGUID,
+			&event.SpaceGUID,
+			&bytesOfMetadataJSON,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if len(bytesOfMetadataJSON) > 0 {
+			err = json.Unmarshal(bytesOfMetadataJSON, &event.Metadata)
+			if err != nil {
+				return nil, err
+			}
+		}
+		events = append(events, event)
+	}
+	return events, nil
+}
+
+func (s *EventStore) UpdateShipperCursor(shipperName string, shipperTime time.Time, shippedID string) error {
+	ctx, cancel := context.WithTimeout(s.ctx, DefaultStoreTimeout)
+	defer cancel()
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	stmt := fmt.Sprintf(
+		`insert into %s (name, updated_at, shipped_id) values (
+				$1, $2, $3
+			) on conflict (name) do
+			update set
+				updated_at = excluded.updated_at,
+				shipped_id = excluded.shipped_id`,
+		ShipperCursorsTable,
+	)
+
+	_, err = tx.Exec(stmt, shipperName, shipperTime, shippedID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (s *EventStore) GetLatestCfEventTime() (*time.Time, error) {
