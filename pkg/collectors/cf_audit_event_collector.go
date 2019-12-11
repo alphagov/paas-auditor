@@ -36,6 +36,7 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 		pullEventsSince, err := c.pullEventsSince(5 * time.Second)
 		if err != nil {
 			lsession.Error("pull-events-since", err)
+			CFAuditEventCollectorErrorsTotal.Inc()
 			return err
 		}
 
@@ -52,16 +53,19 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 			for result := range resultsChan {
 				if result.Err != nil {
 					lsession.Error("err-recv-events", err)
+					CFAuditEventCollectorErrorsTotal.Inc()
 					return result.Err
 				}
 
 				err := c.eventDB.StoreCfAuditEvents(result.Events)
 				if err != nil {
 					lsession.Error("err-store-cf-audit-events", err)
+					CFAuditEventCollectorErrorsTotal.Inc()
 					return err
 				}
 
 				c.eventsCollected += len(result.Events)
+				CFAuditEventCollectorEventsCollectedTotal.Add(float64(len(result.Events)))
 
 				lsession.Info(
 					"stored-events",
@@ -72,13 +76,15 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 				)
 			}
 
+			duration := time.Since(startTime)
 			lsession.Info(
 				"stored-all-events",
 				lager.Data{
-					"duration":         time.Since(startTime),
+					"duration":         duration,
 					"events-collected": c.eventsCollected,
 				},
 			)
+			CFAuditEventCollectorEventsCollectDurationTotal.Add(duration.Seconds())
 		}
 	}
 }

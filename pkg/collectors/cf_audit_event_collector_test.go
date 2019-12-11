@@ -14,6 +14,7 @@ import (
 	"github.com/alphagov/paas-auditor/pkg/collectors"
 	dbfakes "github.com/alphagov/paas-auditor/pkg/db/fakes"
 	"github.com/alphagov/paas-auditor/pkg/fetchers"
+	h "github.com/alphagov/paas-auditor/pkg/testhelpers"
 )
 
 var _ = Describe("CfAuditEventCollector Run", func() {
@@ -21,11 +22,18 @@ var _ = Describe("CfAuditEventCollector Run", func() {
 		coll    *collectors.CfAuditEventCollector
 		logger  lager.Logger
 		eventDB *dbfakes.FakeEventDB
+
+		cfAuditEventCollectorEventsCollectedTotal float64
 	)
 
 	BeforeEach(func() {
 		logger = lager.NewLogger("collector-test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.INFO))
+
+		By("checking the value of the metrics to test against them later")
+		cfAuditEventCollectorEventsCollectedTotal = h.CurrentMetricValue(
+			collectors.CFAuditEventCollectorEventsCollectedTotal,
+		)
 	})
 
 	It("appears to work", func() {
@@ -76,6 +84,12 @@ var _ = Describe("CfAuditEventCollector Run", func() {
 
 		Expect(eventDB.GetLatestCfEventTimeCallCount()).Should(BeNumerically(">=", 1))
 
+		By("checking the metrics")
+		Expect(collectors.CFAuditEventCollectorEventsCollectedTotal).To(
+			h.MetricIncrementedBy(cfAuditEventCollectorEventsCollectedTotal, ">=", 3),
+		)
+
+		By("cleaning up")
 		cancelCollect()
 		collectWG.Wait()
 		Expect(collectError).NotTo(HaveOccurred())
