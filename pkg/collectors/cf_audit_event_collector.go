@@ -35,7 +35,7 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 	for {
 		pullEventsSince, err := c.pullEventsSince(5 * time.Second)
 		if err != nil {
-			lsession.Error("pull-events-since", err)
+			lsession.Error("err-pull-events-since", err)
 			CFAuditEventCollectorErrorsTotal.Inc()
 			return err
 		}
