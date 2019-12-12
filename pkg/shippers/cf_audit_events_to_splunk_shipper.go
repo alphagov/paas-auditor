@@ -111,7 +111,7 @@ func (s *CfAuditEventsToSplunkShipper) Run(ctx context.Context) error {
 			if err != nil {
 				lsession.Error("err-get-unshipped-cf-audit-events-for-shipper", err)
 				CFAuditEventsToSplunkShipperErrorsTotal.Inc()
-				return err
+				continue
 			}
 
 			var (
@@ -147,7 +147,7 @@ func (s *CfAuditEventsToSplunkShipper) Run(ctx context.Context) error {
 						"shipper": cfAuditEventsToSplunkShipperName,
 					})
 					CFAuditEventsToSplunkShipperErrorsTotal.Inc()
-					return err
+					continue
 				}
 
 				lastEventCreatedAt, err := time.Parse(time.RFC3339, lastEvent.CreatedAt)
