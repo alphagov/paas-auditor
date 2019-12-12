@@ -196,6 +196,13 @@ func (s *EventStore) GetUnshippedCfAuditEventsForShipper(shipperName string) ([]
 				select (date '1970 1 1')::timestamptz, ''
 			order by updated_at desc
 			limit 1
+		),
+		recent_cf_audit_events as (
+			select *
+			from ` + CfAuditEventsTable + `
+			where created_at >= (select updated_at from last_shipped_event)
+			order by created_at asc
+			limit 100
 		)
 		select
 			guid,
@@ -211,16 +218,9 @@ func (s *EventStore) GetUnshippedCfAuditEventsForShipper(shipperName string) ([]
 			coalesce(organization_guid::text, ''),
 			coalesce(space_guid::text, ''),
 			metadata
-		from
-			` + CfAuditEventsTable + `
-		where
-				created_at >= (select updated_at from last_shipped_event)
-			and
-				guid::text != (select shipped_id from last_shipped_event)
-		order by
-			created_at asc,
-			id asc
-		limit 100
+		from recent_cf_audit_events
+		where guid::text != (select shipped_id from last_shipped_event)
+		order by created_at asc
 	`)
 	if err != nil {
 		return nil, err
