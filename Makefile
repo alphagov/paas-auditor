@@ -1,4 +1,4 @@
-.PHONY: generate-mocks run-dev-exports clean
+.PHONY: generate-mocks run-dev-exports clean test
 
 DATABASE_URL ?= postgres://postgres:@localhost:5432/?sslmode=disable
 TEST_DATABASE_URL ?= postgres://postgres:@localhost:5432/?sslmode=disable
@@ -34,3 +34,6 @@ stop-postgres-docker:
 
 generate-mocks:
 	counterfeiter -o pkg/db/fakes/event_db.go pkg/db EventDB
+
+test:
+	go test -mod=vendor ./...
