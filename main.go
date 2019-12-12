@@ -14,6 +14,8 @@ import (
 	"github.com/alphagov/paas-auditor/pkg/collectors"
 	"github.com/alphagov/paas-auditor/pkg/db"
 	"github.com/alphagov/paas-auditor/pkg/fetchers"
+	"github.com/alphagov/paas-auditor/pkg/shippers"
+
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -52,7 +54,16 @@ func main() {
 	fetcher := func(pullEventsSince time.Time, resultsChan chan fetchers.CFAuditEventResult) {
 		fetchers.FetchCFAuditEvents(&fetcherCfg, pullEventsSince, resultsChan)
 	}
-	collector := collectors.NewCfAuditEventCollector(cfg.Schedule, cfg.Logger, fetcher, eventDB)
+
+	collector := collectors.NewCfAuditEventCollector(cfg.CollectorSchedule, cfg.Logger, fetcher, eventDB)
+
+	shipper := shippers.NewCfAuditEventsToSplunkShipper(
+		cfg.ShipperSchedule,
+		cfg.Logger,
+		eventDB,
+		cfg.DeployEnv,
+		cfg.SplunkAPIKey, cfg.SplunkURL,
+	)
 
 	mux := http.NewServeMux()
 
@@ -73,17 +84,31 @@ func main() {
 	go func() {
 		err := collector.Run(ctx)
 		if err != nil {
-			cfg.Logger.Error("Collector encountered error: %s", err)
+			cfg.Logger.Error("err-fatal-collector", err)
 		}
 		shutdown()
 		os.Exit(1)
 	}()
 
+	if cfg.SplunkAPIKey != "" && cfg.SplunkURL != "" {
+		cfg.Logger.Info("creds-present-starting-shipper")
+
+		wg.Add(1)
+		go func() {
+			err := shipper.Run(ctx)
+			if err != nil {
+				cfg.Logger.Error("err-fatal-shipper", err)
+			}
+			shutdown()
+			os.Exit(1)
+		}()
+	}
+
 	wg.Add(1)
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			cfg.Logger.Error("Server encountered error: %s", err)
+			cfg.Logger.Error("err-fatal-server", err)
 		}
 		shutdown()
 		os.Exit(1)

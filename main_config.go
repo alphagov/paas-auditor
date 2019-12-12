@@ -13,19 +13,30 @@ import (
 )
 
 type Config struct {
-	Logger             lager.Logger
-	DatabaseURL        string
-	CFClientConfig     *cfclient.Config
-	Schedule           time.Duration
+	DeployEnv string
+
+	Logger      lager.Logger
+	DatabaseURL string
+
+	CFClientConfig *cfclient.Config
+
 	PaginationWaitTime time.Duration
+	CollectorSchedule  time.Duration
+	ShipperSchedule    time.Duration
+
+	SplunkAPIKey string
+	SplunkURL    string
 
 	ListenPort uint
 }
 
 func NewConfigFromEnv() Config {
 	return Config{
+		DeployEnv: getEnvWithDefaultString("DEPLOY_ENV", "dev"),
+
 		Logger:      getDefaultLogger(),
 		DatabaseURL: getEnvWithDefaultString("DATABASE_URL", "postgres://postgres:@localhost:5432/"),
+
 		CFClientConfig: &cfclient.Config{
 			ApiAddress:        os.Getenv("CF_API_ADDRESS"),
 			Username:          os.Getenv("CF_USERNAME"),
@@ -40,8 +51,12 @@ func NewConfigFromEnv() Config {
 			},
 		},
 
-		Schedule:           getEnvWithDefaultDuration("SCHEDULE", 5*time.Minute),
 		PaginationWaitTime: getEnvWithDefaultDuration("FETCHER_PAGINATION_WAIT_TIME", 200*time.Millisecond),
+		CollectorSchedule:  getEnvWithDefaultDuration("COLLECTOR_SCHEDULE", 2*time.Minute),
+		ShipperSchedule:    getEnvWithDefaultDuration("SHIPPER_SCHEDULE", 15*time.Second),
+
+		SplunkAPIKey: os.Getenv("SPLUNK_API_KEY"),
+		SplunkURL:    os.Getenv("SPLUNK_HEC_ENDPOINT_URL"),
 
 		ListenPort: getEnvWithDefaultInt("PORT", 9299),
 	}
