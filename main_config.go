@@ -22,6 +22,7 @@ type Config struct {
 
 	PaginationWaitTime time.Duration
 	CollectorSchedule  time.Duration
+	InformerSchedule   time.Duration
 	ShipperSchedule    time.Duration
 
 	SplunkAPIKey string
@@ -53,6 +54,7 @@ func NewConfigFromEnv() Config {
 
 		PaginationWaitTime: getEnvWithDefaultDuration("FETCHER_PAGINATION_WAIT_TIME", 200*time.Millisecond),
 		CollectorSchedule:  getEnvWithDefaultDuration("COLLECTOR_SCHEDULE", 2*time.Minute),
+		InformerSchedule:   getEnvWithDefaultDuration("INFORMER_SCHEDULE", 15*time.Second),
 		ShipperSchedule:    getEnvWithDefaultDuration("SHIPPER_SCHEDULE", 15*time.Second),
 
 		SplunkAPIKey: os.Getenv("SPLUNK_API_KEY"),

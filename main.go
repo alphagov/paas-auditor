@@ -14,6 +14,7 @@ import (
 	"github.com/alphagov/paas-auditor/pkg/collectors"
 	"github.com/alphagov/paas-auditor/pkg/db"
 	"github.com/alphagov/paas-auditor/pkg/fetchers"
+	inf "github.com/alphagov/paas-auditor/pkg/informer"
 	"github.com/alphagov/paas-auditor/pkg/shippers"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -65,6 +66,12 @@ func main() {
 		cfg.SplunkAPIKey, cfg.SplunkURL,
 	)
 
+	informer := inf.NewInformer(
+		cfg.InformerSchedule,
+		cfg.Logger,
+		eventDB,
+	)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -85,6 +92,16 @@ func main() {
 		err := collector.Run(ctx)
 		if err != nil {
 			cfg.Logger.Error("err-fatal-collector", err)
+		}
+		shutdown()
+		os.Exit(1)
+	}()
+
+	wg.Add(1)
+	go func() {
+		err := informer.Run(ctx)
+		if err != nil {
+			cfg.Logger.Error("err-fatal-informer", err)
 		}
 		shutdown()
 		os.Exit(1)
