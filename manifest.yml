@@ -21,3 +21,7 @@ applications:
       CF_API_ADDRESS: ((cf_api_address))
       CF_CLIENT_ID: ((cf_client_id))
       CF_CLIENT_SECRET: ((cf_client_secret))
+
+      DEPLOY_ENV: ((deploy_env))
+      SPLUNK_API_KEY: ((splunk_api_key))
+      SPLUNK_HEC_ENDPOINT_URL: ((splunk_hec_endpoint_url))
