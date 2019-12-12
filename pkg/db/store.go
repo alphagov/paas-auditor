@@ -31,6 +31,7 @@ type EventDB interface {
 	StoreCfAuditEvents(events []cfclient.Event) error
 	GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, error)
 	GetLatestCfEventTime() (*time.Time, error)
+	GetCfEventCount() (int64, error)
 
 	GetUnshippedCfAuditEventsForShipper(shipperName string) ([]cfclient.Event, error)
 	UpdateShipperCursor(shipperName string, shipperTime string, shippedID string) error
@@ -306,6 +307,21 @@ func (s *EventStore) GetLatestCfEventTime() (*time.Time, error) {
 		return nil, err
 	}
 	return &createdAt, nil
+}
+
+func (s *EventStore) GetCfEventCount() (int64, error) {
+	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
+	defer cancel()
+	row := s.db.QueryRowContext(ctx, `select count(*) from `+CfAuditEventsTable)
+
+	var cfEventCount int64
+	err := row.Scan(&cfEventCount)
+	if err == sql.ErrNoRows {
+		return int64(0), nil
+	} else if err != nil {
+		return int64(0), err
+	}
+	return cfEventCount, nil
 }
 
 func (s *EventStore) runSQLFilesInTransaction(ctx context.Context, filenames ...string) error {

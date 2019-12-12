@@ -23,6 +23,18 @@ type FakeEventDB struct {
 		result1 []cfclient.Event
 		result2 error
 	}
+	GetCfEventCountStub        func() (int64, error)
+	getCfEventCountMutex       sync.RWMutex
+	getCfEventCountArgsForCall []struct {
+	}
+	getCfEventCountReturns struct {
+		result1 int64
+		result2 error
+	}
+	getCfEventCountReturnsOnCall map[int]struct {
+		result1 int64
+		result2 error
+	}
 	GetLatestCfEventTimeStub        func() (*time.Time, error)
 	getLatestCfEventTimeMutex       sync.RWMutex
 	getLatestCfEventTimeArgsForCall []struct {
@@ -145,6 +157,61 @@ func (fake *FakeEventDB) GetCfAuditEventsReturnsOnCall(i int, result1 []cfclient
 	}
 	fake.getCfAuditEventsReturnsOnCall[i] = struct {
 		result1 []cfclient.Event
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeEventDB) GetCfEventCount() (int64, error) {
+	fake.getCfEventCountMutex.Lock()
+	ret, specificReturn := fake.getCfEventCountReturnsOnCall[len(fake.getCfEventCountArgsForCall)]
+	fake.getCfEventCountArgsForCall = append(fake.getCfEventCountArgsForCall, struct {
+	}{})
+	fake.recordInvocation("GetCfEventCount", []interface{}{})
+	fake.getCfEventCountMutex.Unlock()
+	if fake.GetCfEventCountStub != nil {
+		return fake.GetCfEventCountStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getCfEventCountReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeEventDB) GetCfEventCountCallCount() int {
+	fake.getCfEventCountMutex.RLock()
+	defer fake.getCfEventCountMutex.RUnlock()
+	return len(fake.getCfEventCountArgsForCall)
+}
+
+func (fake *FakeEventDB) GetCfEventCountCalls(stub func() (int64, error)) {
+	fake.getCfEventCountMutex.Lock()
+	defer fake.getCfEventCountMutex.Unlock()
+	fake.GetCfEventCountStub = stub
+}
+
+func (fake *FakeEventDB) GetCfEventCountReturns(result1 int64, result2 error) {
+	fake.getCfEventCountMutex.Lock()
+	defer fake.getCfEventCountMutex.Unlock()
+	fake.GetCfEventCountStub = nil
+	fake.getCfEventCountReturns = struct {
+		result1 int64
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeEventDB) GetCfEventCountReturnsOnCall(i int, result1 int64, result2 error) {
+	fake.getCfEventCountMutex.Lock()
+	defer fake.getCfEventCountMutex.Unlock()
+	fake.GetCfEventCountStub = nil
+	if fake.getCfEventCountReturnsOnCall == nil {
+		fake.getCfEventCountReturnsOnCall = make(map[int]struct {
+			result1 int64
+			result2 error
+		})
+	}
+	fake.getCfEventCountReturnsOnCall[i] = struct {
+		result1 int64
 		result2 error
 	}{result1, result2}
 }
@@ -451,6 +518,8 @@ func (fake *FakeEventDB) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.getCfAuditEventsMutex.RLock()
 	defer fake.getCfAuditEventsMutex.RUnlock()
+	fake.getCfEventCountMutex.RLock()
+	defer fake.getCfEventCountMutex.RUnlock()
 	fake.getLatestCfEventTimeMutex.RLock()
 	defer fake.getLatestCfEventTimeMutex.RUnlock()
 	fake.getUnshippedCfAuditEventsForShipperMutex.RLock()
