@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	CfAuditEventsTable  = "cf_audit_events"
+	CFAuditEventsTable  = "cf_audit_events"
 	ShipperCursorsTable = "shipper_cursors"
 
 	DefaultInitTimeout  = 15 * time.Minute
@@ -28,12 +28,12 @@ const (
 type EventDB interface {
 	Init() error
 
-	StoreCfAuditEvents(events []cfclient.Event) error
-	GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, error)
-	GetLatestCfEventTime() (*time.Time, error)
-	GetCfEventCount() (int64, error)
+	StoreCFAuditEvents(events []cfclient.Event) error
+	GetCFAuditEvents(filter RawEventFilter) ([]cfclient.Event, error)
+	GetLatestCFEventTime() (*time.Time, error)
+	GetCFEventCount() (int64, error)
 
-	GetUnshippedCfAuditEventsForShipper(shipperName string) ([]cfclient.Event, error)
+	GetUnshippedCFAuditEventsForShipper(shipperName string) ([]cfclient.Event, error)
 	UpdateShipperCursor(shipperName string, shipperTime string, shippedID string) error
 }
 
@@ -70,7 +70,7 @@ func (s *EventStore) Init() error {
 	return nil
 }
 
-func (s *EventStore) StoreCfAuditEvents(events []cfclient.Event) error {
+func (s *EventStore) StoreCFAuditEvents(events []cfclient.Event) error {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultStoreTimeout)
 	defer cancel()
 	tx, err := s.db.BeginTx(ctx, nil)
@@ -90,7 +90,7 @@ func (s *EventStore) StoreCfAuditEvents(events []cfclient.Event) error {
 			) values (
 				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NULLIF($11, '')::uuid, NULLIF($12, '')::uuid, $13
 			) on conflict do nothing
-		`, CfAuditEventsTable)
+		`, CFAuditEventsTable)
 		_, err = tx.Exec(stmt, event.GUID, event.CreatedAt, event.Type, event.Actor, event.ActorType, event.ActorName, event.ActorUsername, event.Actee, event.ActeeType, event.ActeeName, event.OrganizationGUID, event.SpaceGUID, eventMetadataJSON)
 		if err != nil {
 			return err
@@ -105,7 +105,7 @@ type RawEventFilter struct {
 	Kind    string
 }
 
-func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, error) {
+func (s *EventStore) GetCFAuditEvents(filter RawEventFilter) ([]cfclient.Event, error) {
 	events := []cfclient.Event{}
 	sortDirection := "desc"
 	if filter.Reverse {
@@ -138,7 +138,7 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 			coalesce(space_guid::text, ''),
 			metadata
 		from
-			` + CfAuditEventsTable + `
+			` + CFAuditEventsTable + `
 		order by
 			id ` + sortDirection + `
 		` + limit + `
@@ -179,7 +179,7 @@ func (s *EventStore) GetCfAuditEvents(filter RawEventFilter) ([]cfclient.Event, 
 	return events, nil
 }
 
-func (s *EventStore) GetUnshippedCfAuditEventsForShipper(shipperName string) ([]cfclient.Event, error) {
+func (s *EventStore) GetUnshippedCFAuditEventsForShipper(shipperName string) ([]cfclient.Event, error) {
 	events := []cfclient.Event{}
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
 	defer cancel()
@@ -200,7 +200,7 @@ func (s *EventStore) GetUnshippedCfAuditEventsForShipper(shipperName string) ([]
 		),
 		recent_cf_audit_events as (
 			select *
-			from ` + CfAuditEventsTable + `
+			from ` + CFAuditEventsTable + `
 			where created_at >= (select updated_at from last_shipped_event)
 			order by created_at asc
 			limit 100
@@ -286,14 +286,14 @@ func (s *EventStore) UpdateShipperCursor(shipperName string, shipperTime string,
 	return tx.Commit()
 }
 
-func (s *EventStore) GetLatestCfEventTime() (*time.Time, error) {
+func (s *EventStore) GetLatestCFEventTime() (*time.Time, error) {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
 	defer cancel()
 	row := s.db.QueryRowContext(ctx, `
 		select
 			created_at
 		from
-			`+CfAuditEventsTable+`
+			`+CFAuditEventsTable+`
 		order by
 			created_at DESC
 		limit 1
@@ -309,10 +309,10 @@ func (s *EventStore) GetLatestCfEventTime() (*time.Time, error) {
 	return &createdAt, nil
 }
 
-func (s *EventStore) GetCfEventCount() (int64, error) {
+func (s *EventStore) GetCFEventCount() (int64, error) {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
 	defer cancel()
-	row := s.db.QueryRowContext(ctx, `select count(*) from `+CfAuditEventsTable)
+	row := s.db.QueryRowContext(ctx, `select count(*) from `+CFAuditEventsTable)
 
 	var cfEventCount int64
 	err := row.Scan(&cfEventCount)

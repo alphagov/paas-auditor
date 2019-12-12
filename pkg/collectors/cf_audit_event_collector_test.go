@@ -17,9 +17,9 @@ import (
 	h "github.com/alphagov/paas-auditor/pkg/testhelpers"
 )
 
-var _ = Describe("CfAuditEventCollector Run", func() {
+var _ = Describe("CFAuditEventCollector Run", func() {
 	var (
-		coll    *collectors.CfAuditEventCollector
+		coll    *collectors.CFAuditEventCollector
 		logger  lager.Logger
 		eventDB *dbfakes.FakeEventDB
 
@@ -53,7 +53,7 @@ var _ = Describe("CfAuditEventCollector Run", func() {
 			close(c)
 		}
 
-		coll = collectors.NewCfAuditEventCollector(
+		coll = collectors.NewCFAuditEventCollector(
 			10*time.Millisecond,
 			logger,
 			fetcher,
@@ -79,10 +79,10 @@ var _ = Describe("CfAuditEventCollector Run", func() {
 
 		By("waiting for events to be collected")
 		Eventually(
-			eventDB.StoreCfAuditEventsCallCount, "100ms", "1ms",
+			eventDB.StoreCFAuditEventsCallCount, "100ms", "1ms",
 		).Should(BeNumerically("==", 3))
 
-		Expect(eventDB.GetLatestCfEventTimeCallCount()).Should(BeNumerically(">=", 1))
+		Expect(eventDB.GetLatestCFEventTimeCallCount()).Should(BeNumerically(">=", 1))
 
 		By("checking the metrics")
 		Expect(collectors.CFAuditEventCollectorEventsCollectedTotal).To(

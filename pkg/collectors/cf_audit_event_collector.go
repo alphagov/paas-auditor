@@ -9,7 +9,7 @@ import (
 	"github.com/alphagov/paas-auditor/pkg/fetchers"
 )
 
-type CfAuditEventCollector struct {
+type CFAuditEventCollector struct {
 	schedule        time.Duration
 	logger          lager.Logger
 	fetcher         fetchers.CFAuditEventFetcher
@@ -17,17 +17,17 @@ type CfAuditEventCollector struct {
 	eventsCollected int
 }
 
-func NewCfAuditEventCollector(
+func NewCFAuditEventCollector(
 	schedule time.Duration,
 	logger lager.Logger,
 	fetcher fetchers.CFAuditEventFetcher,
 	eventDB db.EventDB,
-) *CfAuditEventCollector {
+) *CFAuditEventCollector {
 	logger = logger.Session("cf-audit-event-collector")
-	return &CfAuditEventCollector{schedule, logger, fetcher, eventDB, 0}
+	return &CFAuditEventCollector{schedule, logger, fetcher, eventDB, 0}
 }
 
-func (c *CfAuditEventCollector) Run(ctx context.Context) error {
+func (c *CFAuditEventCollector) Run(ctx context.Context) error {
 	lsession := c.logger.Session("run")
 	lsession.Info("start")
 	defer lsession.Info("end")
@@ -57,7 +57,7 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 					return result.Err
 				}
 
-				err := c.eventDB.StoreCfAuditEvents(result.Events)
+				err := c.eventDB.StoreCFAuditEvents(result.Events)
 				if err != nil {
 					lsession.Error("err-store-cf-audit-events", err)
 					CFAuditEventCollectorErrorsTotal.Inc()
@@ -89,8 +89,8 @@ func (c *CfAuditEventCollector) Run(ctx context.Context) error {
 	}
 }
 
-func (c *CfAuditEventCollector) pullEventsSince(overlapBy time.Duration) (time.Time, error) {
-	latestCFEventTime, err := c.eventDB.GetLatestCfEventTime()
+func (c *CFAuditEventCollector) pullEventsSince(overlapBy time.Duration) (time.Time, error) {
+	latestCFEventTime, err := c.eventDB.GetLatestCFEventTime()
 
 	if err != nil {
 		return time.Time{}, err

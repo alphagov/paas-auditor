@@ -14,7 +14,7 @@ import (
 	h "github.com/alphagov/paas-auditor/pkg/testhelpers"
 )
 
-var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
+var _ = Describe("CFAuditEventsToSplunkShipper Run", func() {
 	var (
 		i       *informer.Informer
 		logger  lager.Logger
@@ -39,8 +39,8 @@ var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
 		currentTime := time.Now()
 
 		eventDB = &dbfakes.FakeEventDB{}
-		eventDB.GetCfEventCountReturns(int64(100), nil)
-		eventDB.GetLatestCfEventTimeReturns(&currentTime, nil)
+		eventDB.GetCFEventCountReturns(int64(100), nil)
+		eventDB.GetLatestCFEventTimeReturns(&currentTime, nil)
 
 		i = informer.NewInformer(
 			10*time.Millisecond,

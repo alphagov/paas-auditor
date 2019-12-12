@@ -10,53 +10,53 @@ import (
 )
 
 type FakeEventDB struct {
-	GetCfAuditEventsStub        func(db.RawEventFilter) ([]cfclient.Event, error)
-	getCfAuditEventsMutex       sync.RWMutex
-	getCfAuditEventsArgsForCall []struct {
+	GetCFAuditEventsStub        func(db.RawEventFilter) ([]cfclient.Event, error)
+	getCFAuditEventsMutex       sync.RWMutex
+	getCFAuditEventsArgsForCall []struct {
 		arg1 db.RawEventFilter
 	}
-	getCfAuditEventsReturns struct {
+	getCFAuditEventsReturns struct {
 		result1 []cfclient.Event
 		result2 error
 	}
-	getCfAuditEventsReturnsOnCall map[int]struct {
+	getCFAuditEventsReturnsOnCall map[int]struct {
 		result1 []cfclient.Event
 		result2 error
 	}
-	GetCfEventCountStub        func() (int64, error)
-	getCfEventCountMutex       sync.RWMutex
-	getCfEventCountArgsForCall []struct {
+	GetCFEventCountStub        func() (int64, error)
+	getCFEventCountMutex       sync.RWMutex
+	getCFEventCountArgsForCall []struct {
 	}
-	getCfEventCountReturns struct {
+	getCFEventCountReturns struct {
 		result1 int64
 		result2 error
 	}
-	getCfEventCountReturnsOnCall map[int]struct {
+	getCFEventCountReturnsOnCall map[int]struct {
 		result1 int64
 		result2 error
 	}
-	GetLatestCfEventTimeStub        func() (*time.Time, error)
-	getLatestCfEventTimeMutex       sync.RWMutex
-	getLatestCfEventTimeArgsForCall []struct {
+	GetLatestCFEventTimeStub        func() (*time.Time, error)
+	getLatestCFEventTimeMutex       sync.RWMutex
+	getLatestCFEventTimeArgsForCall []struct {
 	}
-	getLatestCfEventTimeReturns struct {
+	getLatestCFEventTimeReturns struct {
 		result1 *time.Time
 		result2 error
 	}
-	getLatestCfEventTimeReturnsOnCall map[int]struct {
+	getLatestCFEventTimeReturnsOnCall map[int]struct {
 		result1 *time.Time
 		result2 error
 	}
-	GetUnshippedCfAuditEventsForShipperStub        func(string) ([]cfclient.Event, error)
-	getUnshippedCfAuditEventsForShipperMutex       sync.RWMutex
-	getUnshippedCfAuditEventsForShipperArgsForCall []struct {
+	GetUnshippedCFAuditEventsForShipperStub        func(string) ([]cfclient.Event, error)
+	getUnshippedCFAuditEventsForShipperMutex       sync.RWMutex
+	getUnshippedCFAuditEventsForShipperArgsForCall []struct {
 		arg1 string
 	}
-	getUnshippedCfAuditEventsForShipperReturns struct {
+	getUnshippedCFAuditEventsForShipperReturns struct {
 		result1 []cfclient.Event
 		result2 error
 	}
-	getUnshippedCfAuditEventsForShipperReturnsOnCall map[int]struct {
+	getUnshippedCFAuditEventsForShipperReturnsOnCall map[int]struct {
 		result1 []cfclient.Event
 		result2 error
 	}
@@ -70,15 +70,15 @@ type FakeEventDB struct {
 	initReturnsOnCall map[int]struct {
 		result1 error
 	}
-	StoreCfAuditEventsStub        func([]cfclient.Event) error
-	storeCfAuditEventsMutex       sync.RWMutex
-	storeCfAuditEventsArgsForCall []struct {
+	StoreCFAuditEventsStub        func([]cfclient.Event) error
+	storeCFAuditEventsMutex       sync.RWMutex
+	storeCFAuditEventsArgsForCall []struct {
 		arg1 []cfclient.Event
 	}
-	storeCfAuditEventsReturns struct {
+	storeCFAuditEventsReturns struct {
 		result1 error
 	}
-	storeCfAuditEventsReturnsOnCall map[int]struct {
+	storeCFAuditEventsReturnsOnCall map[int]struct {
 		result1 error
 	}
 	UpdateShipperCursorStub        func(string, string, string) error
@@ -98,237 +98,237 @@ type FakeEventDB struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeEventDB) GetCfAuditEvents(arg1 db.RawEventFilter) ([]cfclient.Event, error) {
-	fake.getCfAuditEventsMutex.Lock()
-	ret, specificReturn := fake.getCfAuditEventsReturnsOnCall[len(fake.getCfAuditEventsArgsForCall)]
-	fake.getCfAuditEventsArgsForCall = append(fake.getCfAuditEventsArgsForCall, struct {
+func (fake *FakeEventDB) GetCFAuditEvents(arg1 db.RawEventFilter) ([]cfclient.Event, error) {
+	fake.getCFAuditEventsMutex.Lock()
+	ret, specificReturn := fake.getCFAuditEventsReturnsOnCall[len(fake.getCFAuditEventsArgsForCall)]
+	fake.getCFAuditEventsArgsForCall = append(fake.getCFAuditEventsArgsForCall, struct {
 		arg1 db.RawEventFilter
 	}{arg1})
-	fake.recordInvocation("GetCfAuditEvents", []interface{}{arg1})
-	fake.getCfAuditEventsMutex.Unlock()
-	if fake.GetCfAuditEventsStub != nil {
-		return fake.GetCfAuditEventsStub(arg1)
+	fake.recordInvocation("GetCFAuditEvents", []interface{}{arg1})
+	fake.getCFAuditEventsMutex.Unlock()
+	if fake.GetCFAuditEventsStub != nil {
+		return fake.GetCFAuditEventsStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getCfAuditEventsReturns
+	fakeReturns := fake.getCFAuditEventsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeEventDB) GetCfAuditEventsCallCount() int {
-	fake.getCfAuditEventsMutex.RLock()
-	defer fake.getCfAuditEventsMutex.RUnlock()
-	return len(fake.getCfAuditEventsArgsForCall)
+func (fake *FakeEventDB) GetCFAuditEventsCallCount() int {
+	fake.getCFAuditEventsMutex.RLock()
+	defer fake.getCFAuditEventsMutex.RUnlock()
+	return len(fake.getCFAuditEventsArgsForCall)
 }
 
-func (fake *FakeEventDB) GetCfAuditEventsCalls(stub func(db.RawEventFilter) ([]cfclient.Event, error)) {
-	fake.getCfAuditEventsMutex.Lock()
-	defer fake.getCfAuditEventsMutex.Unlock()
-	fake.GetCfAuditEventsStub = stub
+func (fake *FakeEventDB) GetCFAuditEventsCalls(stub func(db.RawEventFilter) ([]cfclient.Event, error)) {
+	fake.getCFAuditEventsMutex.Lock()
+	defer fake.getCFAuditEventsMutex.Unlock()
+	fake.GetCFAuditEventsStub = stub
 }
 
-func (fake *FakeEventDB) GetCfAuditEventsArgsForCall(i int) db.RawEventFilter {
-	fake.getCfAuditEventsMutex.RLock()
-	defer fake.getCfAuditEventsMutex.RUnlock()
-	argsForCall := fake.getCfAuditEventsArgsForCall[i]
+func (fake *FakeEventDB) GetCFAuditEventsArgsForCall(i int) db.RawEventFilter {
+	fake.getCFAuditEventsMutex.RLock()
+	defer fake.getCFAuditEventsMutex.RUnlock()
+	argsForCall := fake.getCFAuditEventsArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeEventDB) GetCfAuditEventsReturns(result1 []cfclient.Event, result2 error) {
-	fake.getCfAuditEventsMutex.Lock()
-	defer fake.getCfAuditEventsMutex.Unlock()
-	fake.GetCfAuditEventsStub = nil
-	fake.getCfAuditEventsReturns = struct {
+func (fake *FakeEventDB) GetCFAuditEventsReturns(result1 []cfclient.Event, result2 error) {
+	fake.getCFAuditEventsMutex.Lock()
+	defer fake.getCFAuditEventsMutex.Unlock()
+	fake.GetCFAuditEventsStub = nil
+	fake.getCFAuditEventsReturns = struct {
 		result1 []cfclient.Event
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetCfAuditEventsReturnsOnCall(i int, result1 []cfclient.Event, result2 error) {
-	fake.getCfAuditEventsMutex.Lock()
-	defer fake.getCfAuditEventsMutex.Unlock()
-	fake.GetCfAuditEventsStub = nil
-	if fake.getCfAuditEventsReturnsOnCall == nil {
-		fake.getCfAuditEventsReturnsOnCall = make(map[int]struct {
+func (fake *FakeEventDB) GetCFAuditEventsReturnsOnCall(i int, result1 []cfclient.Event, result2 error) {
+	fake.getCFAuditEventsMutex.Lock()
+	defer fake.getCFAuditEventsMutex.Unlock()
+	fake.GetCFAuditEventsStub = nil
+	if fake.getCFAuditEventsReturnsOnCall == nil {
+		fake.getCFAuditEventsReturnsOnCall = make(map[int]struct {
 			result1 []cfclient.Event
 			result2 error
 		})
 	}
-	fake.getCfAuditEventsReturnsOnCall[i] = struct {
+	fake.getCFAuditEventsReturnsOnCall[i] = struct {
 		result1 []cfclient.Event
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetCfEventCount() (int64, error) {
-	fake.getCfEventCountMutex.Lock()
-	ret, specificReturn := fake.getCfEventCountReturnsOnCall[len(fake.getCfEventCountArgsForCall)]
-	fake.getCfEventCountArgsForCall = append(fake.getCfEventCountArgsForCall, struct {
+func (fake *FakeEventDB) GetCFEventCount() (int64, error) {
+	fake.getCFEventCountMutex.Lock()
+	ret, specificReturn := fake.getCFEventCountReturnsOnCall[len(fake.getCFEventCountArgsForCall)]
+	fake.getCFEventCountArgsForCall = append(fake.getCFEventCountArgsForCall, struct {
 	}{})
-	fake.recordInvocation("GetCfEventCount", []interface{}{})
-	fake.getCfEventCountMutex.Unlock()
-	if fake.GetCfEventCountStub != nil {
-		return fake.GetCfEventCountStub()
+	fake.recordInvocation("GetCFEventCount", []interface{}{})
+	fake.getCFEventCountMutex.Unlock()
+	if fake.GetCFEventCountStub != nil {
+		return fake.GetCFEventCountStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getCfEventCountReturns
+	fakeReturns := fake.getCFEventCountReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeEventDB) GetCfEventCountCallCount() int {
-	fake.getCfEventCountMutex.RLock()
-	defer fake.getCfEventCountMutex.RUnlock()
-	return len(fake.getCfEventCountArgsForCall)
+func (fake *FakeEventDB) GetCFEventCountCallCount() int {
+	fake.getCFEventCountMutex.RLock()
+	defer fake.getCFEventCountMutex.RUnlock()
+	return len(fake.getCFEventCountArgsForCall)
 }
 
-func (fake *FakeEventDB) GetCfEventCountCalls(stub func() (int64, error)) {
-	fake.getCfEventCountMutex.Lock()
-	defer fake.getCfEventCountMutex.Unlock()
-	fake.GetCfEventCountStub = stub
+func (fake *FakeEventDB) GetCFEventCountCalls(stub func() (int64, error)) {
+	fake.getCFEventCountMutex.Lock()
+	defer fake.getCFEventCountMutex.Unlock()
+	fake.GetCFEventCountStub = stub
 }
 
-func (fake *FakeEventDB) GetCfEventCountReturns(result1 int64, result2 error) {
-	fake.getCfEventCountMutex.Lock()
-	defer fake.getCfEventCountMutex.Unlock()
-	fake.GetCfEventCountStub = nil
-	fake.getCfEventCountReturns = struct {
+func (fake *FakeEventDB) GetCFEventCountReturns(result1 int64, result2 error) {
+	fake.getCFEventCountMutex.Lock()
+	defer fake.getCFEventCountMutex.Unlock()
+	fake.GetCFEventCountStub = nil
+	fake.getCFEventCountReturns = struct {
 		result1 int64
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetCfEventCountReturnsOnCall(i int, result1 int64, result2 error) {
-	fake.getCfEventCountMutex.Lock()
-	defer fake.getCfEventCountMutex.Unlock()
-	fake.GetCfEventCountStub = nil
-	if fake.getCfEventCountReturnsOnCall == nil {
-		fake.getCfEventCountReturnsOnCall = make(map[int]struct {
+func (fake *FakeEventDB) GetCFEventCountReturnsOnCall(i int, result1 int64, result2 error) {
+	fake.getCFEventCountMutex.Lock()
+	defer fake.getCFEventCountMutex.Unlock()
+	fake.GetCFEventCountStub = nil
+	if fake.getCFEventCountReturnsOnCall == nil {
+		fake.getCFEventCountReturnsOnCall = make(map[int]struct {
 			result1 int64
 			result2 error
 		})
 	}
-	fake.getCfEventCountReturnsOnCall[i] = struct {
+	fake.getCFEventCountReturnsOnCall[i] = struct {
 		result1 int64
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetLatestCfEventTime() (*time.Time, error) {
-	fake.getLatestCfEventTimeMutex.Lock()
-	ret, specificReturn := fake.getLatestCfEventTimeReturnsOnCall[len(fake.getLatestCfEventTimeArgsForCall)]
-	fake.getLatestCfEventTimeArgsForCall = append(fake.getLatestCfEventTimeArgsForCall, struct {
+func (fake *FakeEventDB) GetLatestCFEventTime() (*time.Time, error) {
+	fake.getLatestCFEventTimeMutex.Lock()
+	ret, specificReturn := fake.getLatestCFEventTimeReturnsOnCall[len(fake.getLatestCFEventTimeArgsForCall)]
+	fake.getLatestCFEventTimeArgsForCall = append(fake.getLatestCFEventTimeArgsForCall, struct {
 	}{})
-	fake.recordInvocation("GetLatestCfEventTime", []interface{}{})
-	fake.getLatestCfEventTimeMutex.Unlock()
-	if fake.GetLatestCfEventTimeStub != nil {
-		return fake.GetLatestCfEventTimeStub()
+	fake.recordInvocation("GetLatestCFEventTime", []interface{}{})
+	fake.getLatestCFEventTimeMutex.Unlock()
+	if fake.GetLatestCFEventTimeStub != nil {
+		return fake.GetLatestCFEventTimeStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getLatestCfEventTimeReturns
+	fakeReturns := fake.getLatestCFEventTimeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeEventDB) GetLatestCfEventTimeCallCount() int {
-	fake.getLatestCfEventTimeMutex.RLock()
-	defer fake.getLatestCfEventTimeMutex.RUnlock()
-	return len(fake.getLatestCfEventTimeArgsForCall)
+func (fake *FakeEventDB) GetLatestCFEventTimeCallCount() int {
+	fake.getLatestCFEventTimeMutex.RLock()
+	defer fake.getLatestCFEventTimeMutex.RUnlock()
+	return len(fake.getLatestCFEventTimeArgsForCall)
 }
 
-func (fake *FakeEventDB) GetLatestCfEventTimeCalls(stub func() (*time.Time, error)) {
-	fake.getLatestCfEventTimeMutex.Lock()
-	defer fake.getLatestCfEventTimeMutex.Unlock()
-	fake.GetLatestCfEventTimeStub = stub
+func (fake *FakeEventDB) GetLatestCFEventTimeCalls(stub func() (*time.Time, error)) {
+	fake.getLatestCFEventTimeMutex.Lock()
+	defer fake.getLatestCFEventTimeMutex.Unlock()
+	fake.GetLatestCFEventTimeStub = stub
 }
 
-func (fake *FakeEventDB) GetLatestCfEventTimeReturns(result1 *time.Time, result2 error) {
-	fake.getLatestCfEventTimeMutex.Lock()
-	defer fake.getLatestCfEventTimeMutex.Unlock()
-	fake.GetLatestCfEventTimeStub = nil
-	fake.getLatestCfEventTimeReturns = struct {
+func (fake *FakeEventDB) GetLatestCFEventTimeReturns(result1 *time.Time, result2 error) {
+	fake.getLatestCFEventTimeMutex.Lock()
+	defer fake.getLatestCFEventTimeMutex.Unlock()
+	fake.GetLatestCFEventTimeStub = nil
+	fake.getLatestCFEventTimeReturns = struct {
 		result1 *time.Time
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetLatestCfEventTimeReturnsOnCall(i int, result1 *time.Time, result2 error) {
-	fake.getLatestCfEventTimeMutex.Lock()
-	defer fake.getLatestCfEventTimeMutex.Unlock()
-	fake.GetLatestCfEventTimeStub = nil
-	if fake.getLatestCfEventTimeReturnsOnCall == nil {
-		fake.getLatestCfEventTimeReturnsOnCall = make(map[int]struct {
+func (fake *FakeEventDB) GetLatestCFEventTimeReturnsOnCall(i int, result1 *time.Time, result2 error) {
+	fake.getLatestCFEventTimeMutex.Lock()
+	defer fake.getLatestCFEventTimeMutex.Unlock()
+	fake.GetLatestCFEventTimeStub = nil
+	if fake.getLatestCFEventTimeReturnsOnCall == nil {
+		fake.getLatestCFEventTimeReturnsOnCall = make(map[int]struct {
 			result1 *time.Time
 			result2 error
 		})
 	}
-	fake.getLatestCfEventTimeReturnsOnCall[i] = struct {
+	fake.getLatestCFEventTimeReturnsOnCall[i] = struct {
 		result1 *time.Time
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetUnshippedCfAuditEventsForShipper(arg1 string) ([]cfclient.Event, error) {
-	fake.getUnshippedCfAuditEventsForShipperMutex.Lock()
-	ret, specificReturn := fake.getUnshippedCfAuditEventsForShipperReturnsOnCall[len(fake.getUnshippedCfAuditEventsForShipperArgsForCall)]
-	fake.getUnshippedCfAuditEventsForShipperArgsForCall = append(fake.getUnshippedCfAuditEventsForShipperArgsForCall, struct {
+func (fake *FakeEventDB) GetUnshippedCFAuditEventsForShipper(arg1 string) ([]cfclient.Event, error) {
+	fake.getUnshippedCFAuditEventsForShipperMutex.Lock()
+	ret, specificReturn := fake.getUnshippedCFAuditEventsForShipperReturnsOnCall[len(fake.getUnshippedCFAuditEventsForShipperArgsForCall)]
+	fake.getUnshippedCFAuditEventsForShipperArgsForCall = append(fake.getUnshippedCFAuditEventsForShipperArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("GetUnshippedCfAuditEventsForShipper", []interface{}{arg1})
-	fake.getUnshippedCfAuditEventsForShipperMutex.Unlock()
-	if fake.GetUnshippedCfAuditEventsForShipperStub != nil {
-		return fake.GetUnshippedCfAuditEventsForShipperStub(arg1)
+	fake.recordInvocation("GetUnshippedCFAuditEventsForShipper", []interface{}{arg1})
+	fake.getUnshippedCFAuditEventsForShipperMutex.Unlock()
+	if fake.GetUnshippedCFAuditEventsForShipperStub != nil {
+		return fake.GetUnshippedCFAuditEventsForShipperStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getUnshippedCfAuditEventsForShipperReturns
+	fakeReturns := fake.getUnshippedCFAuditEventsForShipperReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeEventDB) GetUnshippedCfAuditEventsForShipperCallCount() int {
-	fake.getUnshippedCfAuditEventsForShipperMutex.RLock()
-	defer fake.getUnshippedCfAuditEventsForShipperMutex.RUnlock()
-	return len(fake.getUnshippedCfAuditEventsForShipperArgsForCall)
+func (fake *FakeEventDB) GetUnshippedCFAuditEventsForShipperCallCount() int {
+	fake.getUnshippedCFAuditEventsForShipperMutex.RLock()
+	defer fake.getUnshippedCFAuditEventsForShipperMutex.RUnlock()
+	return len(fake.getUnshippedCFAuditEventsForShipperArgsForCall)
 }
 
-func (fake *FakeEventDB) GetUnshippedCfAuditEventsForShipperCalls(stub func(string) ([]cfclient.Event, error)) {
-	fake.getUnshippedCfAuditEventsForShipperMutex.Lock()
-	defer fake.getUnshippedCfAuditEventsForShipperMutex.Unlock()
-	fake.GetUnshippedCfAuditEventsForShipperStub = stub
+func (fake *FakeEventDB) GetUnshippedCFAuditEventsForShipperCalls(stub func(string) ([]cfclient.Event, error)) {
+	fake.getUnshippedCFAuditEventsForShipperMutex.Lock()
+	defer fake.getUnshippedCFAuditEventsForShipperMutex.Unlock()
+	fake.GetUnshippedCFAuditEventsForShipperStub = stub
 }
 
-func (fake *FakeEventDB) GetUnshippedCfAuditEventsForShipperArgsForCall(i int) string {
-	fake.getUnshippedCfAuditEventsForShipperMutex.RLock()
-	defer fake.getUnshippedCfAuditEventsForShipperMutex.RUnlock()
-	argsForCall := fake.getUnshippedCfAuditEventsForShipperArgsForCall[i]
+func (fake *FakeEventDB) GetUnshippedCFAuditEventsForShipperArgsForCall(i int) string {
+	fake.getUnshippedCFAuditEventsForShipperMutex.RLock()
+	defer fake.getUnshippedCFAuditEventsForShipperMutex.RUnlock()
+	argsForCall := fake.getUnshippedCFAuditEventsForShipperArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeEventDB) GetUnshippedCfAuditEventsForShipperReturns(result1 []cfclient.Event, result2 error) {
-	fake.getUnshippedCfAuditEventsForShipperMutex.Lock()
-	defer fake.getUnshippedCfAuditEventsForShipperMutex.Unlock()
-	fake.GetUnshippedCfAuditEventsForShipperStub = nil
-	fake.getUnshippedCfAuditEventsForShipperReturns = struct {
+func (fake *FakeEventDB) GetUnshippedCFAuditEventsForShipperReturns(result1 []cfclient.Event, result2 error) {
+	fake.getUnshippedCFAuditEventsForShipperMutex.Lock()
+	defer fake.getUnshippedCFAuditEventsForShipperMutex.Unlock()
+	fake.GetUnshippedCFAuditEventsForShipperStub = nil
+	fake.getUnshippedCFAuditEventsForShipperReturns = struct {
 		result1 []cfclient.Event
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetUnshippedCfAuditEventsForShipperReturnsOnCall(i int, result1 []cfclient.Event, result2 error) {
-	fake.getUnshippedCfAuditEventsForShipperMutex.Lock()
-	defer fake.getUnshippedCfAuditEventsForShipperMutex.Unlock()
-	fake.GetUnshippedCfAuditEventsForShipperStub = nil
-	if fake.getUnshippedCfAuditEventsForShipperReturnsOnCall == nil {
-		fake.getUnshippedCfAuditEventsForShipperReturnsOnCall = make(map[int]struct {
+func (fake *FakeEventDB) GetUnshippedCFAuditEventsForShipperReturnsOnCall(i int, result1 []cfclient.Event, result2 error) {
+	fake.getUnshippedCFAuditEventsForShipperMutex.Lock()
+	defer fake.getUnshippedCFAuditEventsForShipperMutex.Unlock()
+	fake.GetUnshippedCFAuditEventsForShipperStub = nil
+	if fake.getUnshippedCFAuditEventsForShipperReturnsOnCall == nil {
+		fake.getUnshippedCFAuditEventsForShipperReturnsOnCall = make(map[int]struct {
 			result1 []cfclient.Event
 			result2 error
 		})
 	}
-	fake.getUnshippedCfAuditEventsForShipperReturnsOnCall[i] = struct {
+	fake.getUnshippedCFAuditEventsForShipperReturnsOnCall[i] = struct {
 		result1 []cfclient.Event
 		result2 error
 	}{result1, result2}
@@ -386,67 +386,67 @@ func (fake *FakeEventDB) InitReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeEventDB) StoreCfAuditEvents(arg1 []cfclient.Event) error {
+func (fake *FakeEventDB) StoreCFAuditEvents(arg1 []cfclient.Event) error {
 	var arg1Copy []cfclient.Event
 	if arg1 != nil {
 		arg1Copy = make([]cfclient.Event, len(arg1))
 		copy(arg1Copy, arg1)
 	}
-	fake.storeCfAuditEventsMutex.Lock()
-	ret, specificReturn := fake.storeCfAuditEventsReturnsOnCall[len(fake.storeCfAuditEventsArgsForCall)]
-	fake.storeCfAuditEventsArgsForCall = append(fake.storeCfAuditEventsArgsForCall, struct {
+	fake.storeCFAuditEventsMutex.Lock()
+	ret, specificReturn := fake.storeCFAuditEventsReturnsOnCall[len(fake.storeCFAuditEventsArgsForCall)]
+	fake.storeCFAuditEventsArgsForCall = append(fake.storeCFAuditEventsArgsForCall, struct {
 		arg1 []cfclient.Event
 	}{arg1Copy})
-	fake.recordInvocation("StoreCfAuditEvents", []interface{}{arg1Copy})
-	fake.storeCfAuditEventsMutex.Unlock()
-	if fake.StoreCfAuditEventsStub != nil {
-		return fake.StoreCfAuditEventsStub(arg1)
+	fake.recordInvocation("StoreCFAuditEvents", []interface{}{arg1Copy})
+	fake.storeCFAuditEventsMutex.Unlock()
+	if fake.StoreCFAuditEventsStub != nil {
+		return fake.StoreCFAuditEventsStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.storeCfAuditEventsReturns
+	fakeReturns := fake.storeCFAuditEventsReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeEventDB) StoreCfAuditEventsCallCount() int {
-	fake.storeCfAuditEventsMutex.RLock()
-	defer fake.storeCfAuditEventsMutex.RUnlock()
-	return len(fake.storeCfAuditEventsArgsForCall)
+func (fake *FakeEventDB) StoreCFAuditEventsCallCount() int {
+	fake.storeCFAuditEventsMutex.RLock()
+	defer fake.storeCFAuditEventsMutex.RUnlock()
+	return len(fake.storeCFAuditEventsArgsForCall)
 }
 
-func (fake *FakeEventDB) StoreCfAuditEventsCalls(stub func([]cfclient.Event) error) {
-	fake.storeCfAuditEventsMutex.Lock()
-	defer fake.storeCfAuditEventsMutex.Unlock()
-	fake.StoreCfAuditEventsStub = stub
+func (fake *FakeEventDB) StoreCFAuditEventsCalls(stub func([]cfclient.Event) error) {
+	fake.storeCFAuditEventsMutex.Lock()
+	defer fake.storeCFAuditEventsMutex.Unlock()
+	fake.StoreCFAuditEventsStub = stub
 }
 
-func (fake *FakeEventDB) StoreCfAuditEventsArgsForCall(i int) []cfclient.Event {
-	fake.storeCfAuditEventsMutex.RLock()
-	defer fake.storeCfAuditEventsMutex.RUnlock()
-	argsForCall := fake.storeCfAuditEventsArgsForCall[i]
+func (fake *FakeEventDB) StoreCFAuditEventsArgsForCall(i int) []cfclient.Event {
+	fake.storeCFAuditEventsMutex.RLock()
+	defer fake.storeCFAuditEventsMutex.RUnlock()
+	argsForCall := fake.storeCFAuditEventsArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeEventDB) StoreCfAuditEventsReturns(result1 error) {
-	fake.storeCfAuditEventsMutex.Lock()
-	defer fake.storeCfAuditEventsMutex.Unlock()
-	fake.StoreCfAuditEventsStub = nil
-	fake.storeCfAuditEventsReturns = struct {
+func (fake *FakeEventDB) StoreCFAuditEventsReturns(result1 error) {
+	fake.storeCFAuditEventsMutex.Lock()
+	defer fake.storeCFAuditEventsMutex.Unlock()
+	fake.StoreCFAuditEventsStub = nil
+	fake.storeCFAuditEventsReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeEventDB) StoreCfAuditEventsReturnsOnCall(i int, result1 error) {
-	fake.storeCfAuditEventsMutex.Lock()
-	defer fake.storeCfAuditEventsMutex.Unlock()
-	fake.StoreCfAuditEventsStub = nil
-	if fake.storeCfAuditEventsReturnsOnCall == nil {
-		fake.storeCfAuditEventsReturnsOnCall = make(map[int]struct {
+func (fake *FakeEventDB) StoreCFAuditEventsReturnsOnCall(i int, result1 error) {
+	fake.storeCFAuditEventsMutex.Lock()
+	defer fake.storeCFAuditEventsMutex.Unlock()
+	fake.StoreCFAuditEventsStub = nil
+	if fake.storeCFAuditEventsReturnsOnCall == nil {
+		fake.storeCFAuditEventsReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.storeCfAuditEventsReturnsOnCall[i] = struct {
+	fake.storeCFAuditEventsReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -516,18 +516,18 @@ func (fake *FakeEventDB) UpdateShipperCursorReturnsOnCall(i int, result1 error) 
 func (fake *FakeEventDB) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getCfAuditEventsMutex.RLock()
-	defer fake.getCfAuditEventsMutex.RUnlock()
-	fake.getCfEventCountMutex.RLock()
-	defer fake.getCfEventCountMutex.RUnlock()
-	fake.getLatestCfEventTimeMutex.RLock()
-	defer fake.getLatestCfEventTimeMutex.RUnlock()
-	fake.getUnshippedCfAuditEventsForShipperMutex.RLock()
-	defer fake.getUnshippedCfAuditEventsForShipperMutex.RUnlock()
+	fake.getCFAuditEventsMutex.RLock()
+	defer fake.getCFAuditEventsMutex.RUnlock()
+	fake.getCFEventCountMutex.RLock()
+	defer fake.getCFEventCountMutex.RUnlock()
+	fake.getLatestCFEventTimeMutex.RLock()
+	defer fake.getLatestCFEventTimeMutex.RUnlock()
+	fake.getUnshippedCFAuditEventsForShipperMutex.RLock()
+	defer fake.getUnshippedCFAuditEventsForShipperMutex.RUnlock()
 	fake.initMutex.RLock()
 	defer fake.initMutex.RUnlock()
-	fake.storeCfAuditEventsMutex.RLock()
-	defer fake.storeCfAuditEventsMutex.RUnlock()
+	fake.storeCFAuditEventsMutex.RLock()
+	defer fake.storeCFAuditEventsMutex.RUnlock()
 	fake.updateShipperCursorMutex.RLock()
 	defer fake.updateShipperCursorMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

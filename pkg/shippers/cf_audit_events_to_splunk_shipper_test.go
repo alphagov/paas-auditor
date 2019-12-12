@@ -23,7 +23,7 @@ const (
 	splunkURL = "http://splunk.api/hec-endpoint"
 )
 
-var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
+var _ = Describe("CFAuditEventsToSplunkShipper Run", func() {
 	BeforeSuite(func() {
 		httpmock.Activate()
 	})
@@ -37,7 +37,7 @@ var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
 	})
 
 	var (
-		shipper *shippers.CfAuditEventsToSplunkShipper
+		shipper *shippers.CFAuditEventsToSplunkShipper
 		logger  lager.Logger
 		eventDB *dbfakes.FakeEventDB
 
@@ -58,7 +58,7 @@ var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
 		)
 
 		eventDB = &dbfakes.FakeEventDB{}
-		eventDB.GetUnshippedCfAuditEventsForShipperReturns(
+		eventDB.GetUnshippedCFAuditEventsForShipperReturns(
 			[]cfclient.Event{
 				cfclient.Event{GUID: "abcd", CreatedAt: "2006-01-02T15:04:05Z"},
 				cfclient.Event{GUID: "efgh", CreatedAt: "2006-01-02T15:04:05Z"},
@@ -67,7 +67,7 @@ var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
 			nil,
 		)
 
-		shipper = shippers.NewCfAuditEventsToSplunkShipper(
+		shipper = shippers.NewCFAuditEventsToSplunkShipper(
 			10*time.Millisecond,
 			logger,
 			eventDB,
@@ -102,7 +102,7 @@ var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
 
 		By("waiting for events to be queried")
 		Eventually(
-			eventDB.GetUnshippedCfAuditEventsForShipperCallCount, "100ms", "1ms",
+			eventDB.GetUnshippedCFAuditEventsForShipperCallCount, "100ms", "1ms",
 		).Should(BeNumerically("==", 1))
 
 		By("waiting for events to be shipped")
@@ -167,7 +167,7 @@ var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
 
 		By("waiting for events to be queried")
 		Eventually(
-			eventDB.GetUnshippedCfAuditEventsForShipperCallCount, "100ms", "1ms",
+			eventDB.GetUnshippedCFAuditEventsForShipperCallCount, "100ms", "1ms",
 		).Should(BeNumerically("==", 1))
 
 		By("waiting for events to be shipped")
@@ -186,7 +186,7 @@ var _ = Describe("CfAuditEventsToSplunkShipper Run", func() {
 
 		By("waiting for events to be queried again")
 		Eventually(
-			eventDB.GetUnshippedCfAuditEventsForShipperCallCount, "1s", "1ms",
+			eventDB.GetUnshippedCFAuditEventsForShipperCallCount, "1s", "1ms",
 		).Should(BeNumerically("==", 2))
 
 		By("waiting for events to be shipped")

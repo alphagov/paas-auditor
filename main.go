@@ -56,9 +56,9 @@ func main() {
 		fetchers.FetchCFAuditEvents(&fetcherCfg, pullEventsSince, resultsChan)
 	}
 
-	collector := collectors.NewCfAuditEventCollector(cfg.CollectorSchedule, cfg.Logger, fetcher, eventDB)
+	collector := collectors.NewCFAuditEventCollector(cfg.CollectorSchedule, cfg.Logger, fetcher, eventDB)
 
-	shipper := shippers.NewCfAuditEventsToSplunkShipper(
+	shipper := shippers.NewCFAuditEventsToSplunkShipper(
 		cfg.ShipperSchedule,
 		cfg.Logger,
 		eventDB,

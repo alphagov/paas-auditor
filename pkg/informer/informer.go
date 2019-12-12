@@ -35,13 +35,13 @@ func (i *Informer) Run(ctx context.Context) error {
 			lsession.Info("done")
 			return nil
 		case <-time.After(i.schedule):
-			count, err := i.eventDB.GetCfEventCount()
+			count, err := i.eventDB.GetCFEventCount()
 			if err != nil {
 				lsession.Error("err-event-db-get-cf-event-count", err)
 			}
 			InformerCFAuditEventsTotal.Set(float64(count)) // this will be 0 if err
 
-			timestamp, err := i.eventDB.GetLatestCfEventTime()
+			timestamp, err := i.eventDB.GetLatestCFEventTime()
 			if err != nil {
 				lsession.Error("err-event-db-get-latest-cf-event-time", err)
 				InformerLatestCFAuditEventTimestamp.Set(float64(0))

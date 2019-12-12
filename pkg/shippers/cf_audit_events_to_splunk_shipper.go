@@ -38,7 +38,7 @@ func (c *splunkHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	return c.client.Do(req)
 }
 
-type CfAuditEventsToSplunkShipper struct {
+type CFAuditEventsToSplunkShipper struct {
 	schedule  time.Duration
 	logger    lager.Logger
 	eventDB   db.EventDB
@@ -49,14 +49,14 @@ type CfAuditEventsToSplunkShipper struct {
 	eventsShipped int
 }
 
-func NewCfAuditEventsToSplunkShipper(
+func NewCFAuditEventsToSplunkShipper(
 	schedule time.Duration,
 	logger lager.Logger,
 	eventDB db.EventDB,
 	deployEnv string,
 	splunkAPIKey string,
 	splunkURL string,
-) *CfAuditEventsToSplunkShipper {
+) *CFAuditEventsToSplunkShipper {
 	logger = logger.Session("cf-audit-events-to-splunk-shipper")
 
 	var (
@@ -85,12 +85,12 @@ func NewCfAuditEventsToSplunkShipper(
 		httpclient.WithRetryCount(maxRetries),
 	)
 
-	return &CfAuditEventsToSplunkShipper{
+	return &CFAuditEventsToSplunkShipper{
 		schedule, logger, eventDB, deployEnv, client, splunkURL, 0,
 	}
 }
 
-func (s *CfAuditEventsToSplunkShipper) Run(ctx context.Context) error {
+func (s *CFAuditEventsToSplunkShipper) Run(ctx context.Context) error {
 	lsession := s.logger.Session("run")
 
 	lsession.Info("start")
@@ -104,7 +104,7 @@ func (s *CfAuditEventsToSplunkShipper) Run(ctx context.Context) error {
 		case <-time.After(s.schedule):
 			startTime := time.Now()
 
-			eventsToShip, err := s.eventDB.GetUnshippedCfAuditEventsForShipper(
+			eventsToShip, err := s.eventDB.GetUnshippedCFAuditEventsForShipper(
 				cfAuditEventsToSplunkShipperName,
 			)
 
@@ -178,7 +178,7 @@ func (s *CfAuditEventsToSplunkShipper) Run(ctx context.Context) error {
 	}
 }
 
-func (s *CfAuditEventsToSplunkShipper) shipEvent(event cfclient.Event) error {
+func (s *CFAuditEventsToSplunkShipper) shipEvent(event cfclient.Event) error {
 	bytesToShip, err := json.Marshal(splunkEvent{
 		SourceType: "cf-audit-event",
 		Source:     s.deployEnv,
