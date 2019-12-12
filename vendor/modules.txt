@@ -10,6 +10,11 @@ github.com/beorn7/perks/quantile
 github.com/cespare/xxhash/v2
 # github.com/cloudfoundry-community/go-cfclient v0.0.0-20190802192030-078182380772
 github.com/cloudfoundry-community/go-cfclient
+# github.com/gojektech/heimdall v5.0.2+incompatible
+github.com/gojektech/heimdall
+github.com/gojektech/heimdall/httpclient
+# github.com/gojektech/valkyrie v0.0.0-20190210220504-8f62c1e7ba45
+github.com/gojektech/valkyrie
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/proto
 # github.com/hpcloud/tail v1.0.0
@@ -65,6 +70,7 @@ github.com/pkg/errors
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
+github.com/prometheus/client_golang/prometheus/testutil
 # github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
 github.com/prometheus/client_model/go
 # github.com/prometheus/common v0.7.0
