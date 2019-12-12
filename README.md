@@ -35,5 +35,8 @@ You should then get a binary in `bin/paas-auditor`.
 |`CF_API_ADDRESS`|string|yes||Cloud Foundry API endpoint|
 |`CF_CLIENT_ID`|string|yes|| Cloud Foundry client id|
 |`CF_CLIENT_SECRET`|string|yes||Cloud Foundry client secret|
+|`SPLUNK_API_KEY`|string|no||Optional API key for Splunk, if provided it will send events to Splunk HEC|
+|`SPLUNK_HEC_ENDPOINT_URL`|string|no||Optional URL for Splunk, if provided it will send events to Splunk HEC|
+|`DEPLOY_ENV`|string|no||populates the `source` field in Splunk|
 
 **Note**: in development you can use `CF_USERNAME` and `CF_PASSWORD` instead of `CF_CLIENT_ID` `CF_CLIENT_SECRET` to allow it to log into Cloud Foundry
