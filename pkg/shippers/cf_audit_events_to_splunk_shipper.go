@@ -60,12 +60,12 @@ func NewCfAuditEventsToSplunkShipper(
 	logger = logger.Session("cf-audit-events-to-splunk-shipper")
 
 	var (
-		requestTimeout         = 5 * time.Second
-		initalTimeout          = 5 * time.Second
-		maxTimeout             = 15 * time.Second
+		requestTimeout         = 2 * time.Second
+		initalTimeout          = 100 * time.Millisecond
+		maxTimeout             = 2 * time.Second
 		exponent       float64 = 2
 		jitter                 = 500 * time.Millisecond
-		maxRetries             = 10
+		maxRetries             = 3
 
 		backoff = heimdall.NewExponentialBackoff(
 			initalTimeout, maxTimeout,
