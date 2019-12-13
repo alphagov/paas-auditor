@@ -2,29 +2,27 @@
 
 ## How to deploy
 
-At the time of writing it is deployed manually rather than using our pipelines. We can integrate it into our pipelines if/when its data gets actually used for anything.
+For GOV.UK PaaS, the `create-cloudfoundry` pipeline deploys paas-auditor.
 
-The details below are GOV.UK PaaS-specific, but the general idea works for any Cloud Foundry.
-
-To run the below steps you'll need three things:
+For other CF deployments you'll need three things:
 
 * For your `cf` CLI to be logged into Cloud Foundry;
 * For the `DEPLOY_ENV` environment variable to be set appropriately;
-* For your AWS access to be configured so the `aws` CLI will work.
 * To have already created a Postgres service named `auditor-db`.
 
 ```
 cd paas-auditor
-cf target -o admin -s billing
-cf push --no-start
+
+cf push \
+   --no-start \
+   --var cf_api_address="$CF_API_ADDRESS" \
+   --var cf_client_id="$CF_CLIENT_ID" \
+   --var cf_client_secret="$CF_CLIENT_SECRET" \
+   --var deploy_env="$DEPLOY_ENV" \
+   --var splunk_api_key="$SPLUNK_API_KEY" \
+   --var splunk_hec_endpoint_url="$SPLUNK_HEC_ENDPOINT_URL"
+
 cf bind-service paas-auditor auditor-db
-
-CF_API_ADDRESS=$(cf target | awk '/api endpoint:/ { print $3 }')
-CF_CLIENT_SECRET=$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/cf-vars-store.yml" - | awk '/uaa_clients_paas_auditor_secret/ { print $2 }')
-
-cf set-env paas-auditor CF_API_ADDRESS "$CF_API_ADDRESS"
-cf set-env paas-auditor CF_CLIENT_ID paas-auditor
-cf set-env paas-auditor CF_CLIENT_SECRET "$CF_CLIENT_SECRET"
 
 cf start paas-auditor
 ```
@@ -36,7 +34,10 @@ A few seconds after starting up, `paas-auditor` will first fetch audit events fr
 * If your database is empty it will fetch the last 4 weeks of data. potentially tens of thousands of pages (100 events per page.)
 * If your database already has events stored, it will fetch data since the most recent event. To ensure nothing is missed, it actually fetches data from 5 minutes before then.
 
-Once that initial fetching finishes, it will wake up to bring itself up to date every 5 minutes.
+Once that initial fetching finishes, it will wake up to bring itself up to date every few minutes.
+
+If `SPLUNK_API_KEY` and `SPLUNK_HEC_ENDPOINT_URL` environment variables are
+sent then paas-auditor will also ship audit events to Splunk.
 
 ### How to observe it working
 
@@ -57,6 +58,8 @@ Here's a useful query to show the number of events stored and how up-to-date the
 ```
 SELECT COUNT(*), MAX(created_at) FROM cf_audit_events;
 ```
+
+The application also exposes metrics via Prometheus exposition format, accessible via `/metrics`
 
 ## Dealing with issues
 
