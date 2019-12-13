@@ -6,8 +6,6 @@
 
 A Golang application that scrapes Cloud Controller's `/v2/events` endpoint for Audit Events and stores them in a Postgres database.
 
-**This is not supported by the GOV.UK PaaS team. It is an experiment by @46bit and not yet mature.**
-
 **To understand how to run this and solve issues, see the [RUNBOOK](RUNBOOK.md).**
 
 ## Installation
