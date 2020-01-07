@@ -1,6 +1,6 @@
 # paas-auditor
 
-🎵 `paas-billing` 2: Auditor Boogaloo 🎵
+🎵 [`paas-billing` 2: Auditor Boogaloo](https://www.youtube.com/watch?v=4Oy7krobW78) 🎵
 
 ## Overview
 
