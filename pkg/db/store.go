@@ -271,7 +271,7 @@ func (s *EventStore) UpdateShipperCursor(shipperName string, shipperTime string,
 	stmt := fmt.Sprintf(
 		`insert into %s (name, updated_at, shipped_id) values (
 				$1, $2, $3
-			) on conflict (name) do
+			) on conflict on constraint name_unique do
 			update set
 				updated_at = excluded.updated_at,
 				shipped_id = excluded.shipped_id`,

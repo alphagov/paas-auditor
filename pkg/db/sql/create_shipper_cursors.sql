@@ -10,3 +10,9 @@ DO $$ BEGIN
 EXCEPTION
 	WHEN duplicate_object THEN RAISE NOTICE 'constraint already exists';
 END; $$;
+
+DO $$ BEGIN
+	ALTER TABLE shipper_cursors ADD CONSTRAINT name_unique UNIQUE (name);
+EXCEPTION
+	WHEN duplicate_table THEN RAISE NOTICE 'constraint already exists';
+END; $$;
