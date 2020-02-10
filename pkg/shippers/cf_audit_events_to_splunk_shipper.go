@@ -150,6 +150,11 @@ func (s *CFAuditEventsToSplunkShipper) Run(ctx context.Context) error {
 					continue
 				}
 
+				lsession.Info("updated-shipper-cursor", lager.Data{
+					"shipper":        cfAuditEventsToSplunkShipperName,
+					"events-shipped": len(shippedEvents),
+				})
+
 				lastEventCreatedAt, err := time.Parse(time.RFC3339, lastEvent.CreatedAt)
 				if err != nil {
 					// Not fatal
@@ -168,9 +173,10 @@ func (s *CFAuditEventsToSplunkShipper) Run(ctx context.Context) error {
 			lsession.Info(
 				"shipped-events",
 				lager.Data{
-					"duration":           duration,
-					"events-shipped":     s.eventsShipped,
-					"all-events-shipped": allEventsShipped,
+					"duration":             duration,
+					"events-shipped":       len(shippedEvents),
+					"total-events-shipped": s.eventsShipped,
+					"all-events-shipped":   allEventsShipped,
 				},
 			)
 			CFAuditEventsToSplunkShipperShipDurationTotal.Add(duration.Seconds())
