@@ -36,11 +36,9 @@ var _ = Describe("CFAuditEventsToSplunkShipper Run", func() {
 			informer.InformerLatestCFAuditEventTimestamp,
 		)
 
-		currentTime := time.Now()
-
 		eventDB = &dbfakes.FakeEventDB{}
 		eventDB.GetCFEventCountReturns(int64(100), nil)
-		eventDB.GetLatestCFEventTimeReturns(&currentTime, nil)
+		eventDB.GetLatestCFEventTimeReturns(time.Now(), nil)
 
 		i = informer.NewInformer(
 			10*time.Millisecond,

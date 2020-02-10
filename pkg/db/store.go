@@ -30,7 +30,7 @@ type EventDB interface {
 
 	StoreCFAuditEvents(events []cfclient.Event) error
 	GetCFAuditEvents(filter RawEventFilter) ([]cfclient.Event, error)
-	GetLatestCFEventTime() (*time.Time, error)
+	GetLatestCFEventTime() (time.Time, error)
 	GetCFEventCount() (int64, error)
 
 	GetUnshippedCFAuditEventsForShipper(shipperName string) ([]cfclient.Event, error)
@@ -286,7 +286,7 @@ func (s *EventStore) UpdateShipperCursor(shipperName string, shipperTime string,
 	return tx.Commit()
 }
 
-func (s *EventStore) GetLatestCFEventTime() (*time.Time, error) {
+func (s *EventStore) GetLatestCFEventTime() (time.Time, error) {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
 	defer cancel()
 	row := s.db.QueryRowContext(ctx, `
@@ -299,14 +299,12 @@ func (s *EventStore) GetLatestCFEventTime() (*time.Time, error) {
 		limit 1
 	`)
 
-	var createdAt time.Time
+	createdAt := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
 	err := row.Scan(&createdAt)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	} else if err != nil {
-		return nil, err
+	if err != nil && err != sql.ErrNoRows {
+		return createdAt, err
 	}
-	return &createdAt, nil
+	return createdAt, nil // if no rows, return 1st Jan 1970
 }
 
 func (s *EventStore) GetCFEventCount() (int64, error) {

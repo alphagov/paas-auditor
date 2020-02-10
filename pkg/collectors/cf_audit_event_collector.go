@@ -93,12 +93,12 @@ func (c *CFAuditEventCollector) pullEventsSince(overlapBy time.Duration) (time.T
 	latestCFEventTime, err := c.eventDB.GetLatestCFEventTime()
 
 	if err != nil {
-		return time.Time{}, err
+		return latestCFEventTime, err
 	}
 
-	if latestCFEventTime == nil {
-		return time.Time{}, nil
+	startTime := latestCFEventTime.Add(-overlapBy)
+	if startTime.Year() < 1970 {
+		return latestCFEventTime, nil
 	}
-
-	return (*latestCFEventTime).Add(-overlapBy), nil
+	return startTime, nil
 }

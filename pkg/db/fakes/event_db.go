@@ -35,16 +35,16 @@ type FakeEventDB struct {
 		result1 int64
 		result2 error
 	}
-	GetLatestCFEventTimeStub        func() (*time.Time, error)
+	GetLatestCFEventTimeStub        func() (time.Time, error)
 	getLatestCFEventTimeMutex       sync.RWMutex
 	getLatestCFEventTimeArgsForCall []struct {
 	}
 	getLatestCFEventTimeReturns struct {
-		result1 *time.Time
+		result1 time.Time
 		result2 error
 	}
 	getLatestCFEventTimeReturnsOnCall map[int]struct {
-		result1 *time.Time
+		result1 time.Time
 		result2 error
 	}
 	GetUnshippedCFAuditEventsForShipperStub        func(string) ([]cfclient.Event, error)
@@ -216,7 +216,7 @@ func (fake *FakeEventDB) GetCFEventCountReturnsOnCall(i int, result1 int64, resu
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetLatestCFEventTime() (*time.Time, error) {
+func (fake *FakeEventDB) GetLatestCFEventTime() (time.Time, error) {
 	fake.getLatestCFEventTimeMutex.Lock()
 	ret, specificReturn := fake.getLatestCFEventTimeReturnsOnCall[len(fake.getLatestCFEventTimeArgsForCall)]
 	fake.getLatestCFEventTimeArgsForCall = append(fake.getLatestCFEventTimeArgsForCall, struct {
@@ -239,34 +239,34 @@ func (fake *FakeEventDB) GetLatestCFEventTimeCallCount() int {
 	return len(fake.getLatestCFEventTimeArgsForCall)
 }
 
-func (fake *FakeEventDB) GetLatestCFEventTimeCalls(stub func() (*time.Time, error)) {
+func (fake *FakeEventDB) GetLatestCFEventTimeCalls(stub func() (time.Time, error)) {
 	fake.getLatestCFEventTimeMutex.Lock()
 	defer fake.getLatestCFEventTimeMutex.Unlock()
 	fake.GetLatestCFEventTimeStub = stub
 }
 
-func (fake *FakeEventDB) GetLatestCFEventTimeReturns(result1 *time.Time, result2 error) {
+func (fake *FakeEventDB) GetLatestCFEventTimeReturns(result1 time.Time, result2 error) {
 	fake.getLatestCFEventTimeMutex.Lock()
 	defer fake.getLatestCFEventTimeMutex.Unlock()
 	fake.GetLatestCFEventTimeStub = nil
 	fake.getLatestCFEventTimeReturns = struct {
-		result1 *time.Time
+		result1 time.Time
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventDB) GetLatestCFEventTimeReturnsOnCall(i int, result1 *time.Time, result2 error) {
+func (fake *FakeEventDB) GetLatestCFEventTimeReturnsOnCall(i int, result1 time.Time, result2 error) {
 	fake.getLatestCFEventTimeMutex.Lock()
 	defer fake.getLatestCFEventTimeMutex.Unlock()
 	fake.GetLatestCFEventTimeStub = nil
 	if fake.getLatestCFEventTimeReturnsOnCall == nil {
 		fake.getLatestCFEventTimeReturnsOnCall = make(map[int]struct {
-			result1 *time.Time
+			result1 time.Time
 			result2 error
 		})
 	}
 	fake.getLatestCFEventTimeReturnsOnCall[i] = struct {
-		result1 *time.Time
+		result1 time.Time
 		result2 error
 	}{result1, result2}
 }
