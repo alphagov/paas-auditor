@@ -310,7 +310,13 @@ func (s *EventStore) GetLatestCFEventTime() (time.Time, error) {
 func (s *EventStore) GetCFEventCount() (int64, error) {
 	ctx, cancel := context.WithTimeout(s.ctx, DefaultQueryTimeout)
 	defer cancel()
-	row := s.db.QueryRowContext(ctx, `select count(*) from `+CFAuditEventsTable)
+	row := s.db.QueryRowContext(
+		ctx,
+		fmt.Sprintf(
+			`SELECT reltuples FROM pg_class WHERE relname = '%s';`,
+			CFAuditEventsTable,
+		),
+	)
 
 	var cfEventCount int64
 	err := row.Scan(&cfEventCount)
