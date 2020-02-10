@@ -313,7 +313,7 @@ func (s *EventStore) GetCFEventCount() (int64, error) {
 	row := s.db.QueryRowContext(
 		ctx,
 		fmt.Sprintf(
-			`SELECT reltuples FROM pg_class WHERE relname = '%s';`,
+			`SELECT reltuples::numeric FROM pg_class WHERE relname = '%s';`,
 			CFAuditEventsTable,
 		),
 	)
