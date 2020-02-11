@@ -53,7 +53,7 @@ You should then get a binary in `bin/paas-auditor`.
 |`cf_audit_events_to_splunk_shipper_events_shipped_total`| Number of CF audit events shipped to Splunk by CF Audit Events to Splunk shipper |
 |`cf_audit_events_to_splunk_shipper_latest_event_timestamp`| Unix epoch seconds of most recent event shipped to Splunk |
 |`cf_audit_events_to_splunk_shipper_ship_duration_total`| Number of seconds spent shipping events by CF Audit Events to Splunk Shipper |
-|`informer_cf_audit_events_total`| Number of CF audit events in the database (This number is approximate, and depends on Postgres `reltules`) |
+|`informer_cf_audit_events_total`| Number of CF audit events in the database (This number is approximate, and depends on Postgres `reltuples`) |
 |`informer_latest_cf_audit_event_timestamp`| Unix epoch seconds of most recent event in the database |
 
 The default Go and Prometheus metrics are also exposed.
