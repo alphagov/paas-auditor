@@ -203,7 +203,7 @@ func (s *EventStore) GetUnshippedCFAuditEventsForShipper(shipperName string) ([]
 			from ` + CFAuditEventsTable + `
 			where created_at >= (select updated_at from last_shipped_event)
 			order by created_at asc
-			limit 300
+			limit 2048
 		)
 		select
 			guid,

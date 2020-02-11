@@ -55,7 +55,7 @@ func NewConfigFromEnv() Config {
 		PaginationWaitTime: getEnvWithDefaultDuration("FETCHER_PAGINATION_WAIT_TIME", 200*time.Millisecond),
 		CollectorSchedule:  getEnvWithDefaultDuration("COLLECTOR_SCHEDULE", 2*time.Minute),
 		InformerSchedule:   getEnvWithDefaultDuration("INFORMER_SCHEDULE", 15*time.Second),
-		ShipperSchedule:    getEnvWithDefaultDuration("SHIPPER_SCHEDULE", 15*time.Second),
+		ShipperSchedule:    getEnvWithDefaultDuration("SHIPPER_SCHEDULE", 1*time.Minute),
 
 		SplunkAPIKey: os.Getenv("SPLUNK_API_KEY"),
 		SplunkURL:    os.Getenv("SPLUNK_HEC_ENDPOINT_URL"),
