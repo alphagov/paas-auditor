@@ -1,7 +1,7 @@
 ---
 applications:
   - name: paas-auditor
-    memory: 256M
+    memory: 1G
     disk_quota: 100M
     stack: cflinuxfs3
     instances: 1
