@@ -15,7 +15,7 @@ applications:
       - auditor-db
 
     env:
-      GOVERSION: go1.17
+      GOVERSION: go1.18
       GOPACKAGENAME: github.com/alphagov/paas-auditor
 
       CF_API_ADDRESS: ((cf_api_address))

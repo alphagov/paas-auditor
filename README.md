@@ -12,7 +12,7 @@ A Golang application that scrapes Cloud Controller's `/v2/events` endpoint for A
 
 You will need:
 
-* `Go v1.16`
+* `Go v1.18`
 
 To build the application run the default make target:
 
