@@ -52,7 +52,6 @@ func (c *Client) ListServiceKeysByQuery(query url.Values) ([]ServiceKey, error) 
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting service keys")
 		}
-		defer resp.Body.Close()
 		resBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading service keys request:")
@@ -79,27 +78,6 @@ func (c *Client) ListServiceKeysByQuery(query url.Values) ([]ServiceKey, error) 
 	return serviceKeys, nil
 }
 
-func (c *Client) GetServiceKeyByGuid(guid string) (ServiceKey, error) {
-	var serviceKey ServiceKeyResource
-	r := c.NewRequest("GET", "/v2/service_keys/"+url.QueryEscape(guid))
-	resp, err := c.DoRequest(r)
-	if err != nil {
-		return ServiceKey{}, errors.Wrap(err, "Error requesting serving Key")
-	}
-	defer resp.Body.Close()
-	resBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return ServiceKey{}, errors.Wrap(err, "Error reading service Key response body")
-	}
-	err = json.Unmarshal(resBody, &serviceKey)
-	if err != nil {
-		return ServiceKey{}, errors.Wrap(err, "Error unmarshalling service Key")
-	}
-	serviceKey.Entity.Guid = serviceKey.Meta.Guid
-	serviceKey.Entity.c = c
-	return serviceKey.Entity, nil
-}
-
 func (c *Client) ListServiceKeys() ([]ServiceKey, error) {
 	return c.ListServiceKeysByQuery(nil)
 }
@@ -113,24 +91,22 @@ func (c *Client) GetServiceKeyByName(name string) (ServiceKey, error) {
 		return serviceKey, err
 	}
 	if len(serviceKeys) == 0 {
-		cfErr := NewServiceKeyNotFoundError()
-		cfErr.Description = fmt.Sprintf(cfErr.Description, name)
-		return ServiceKey{}, cfErr
+		return serviceKey, fmt.Errorf("Unable to find service key %s", name)
 	}
 	return serviceKeys[0], nil
 }
 
 // GetServiceKeyByInstanceGuid is deprecated in favor of GetServiceKeysByInstanceGuid
 func (c *Client) GetServiceKeyByInstanceGuid(guid string) (ServiceKey, error) {
+	var serviceKey ServiceKey
 	q := url.Values{}
 	q.Set("q", "service_instance_guid:"+guid)
 	serviceKeys, err := c.ListServiceKeysByQuery(q)
 	if err != nil {
-		return ServiceKey{}, err
+		return serviceKey, err
 	}
 	if len(serviceKeys) == 0 {
-		cfErr := NewServiceKeyNotFoundError()
-		return ServiceKey{}, cfErr
+		return serviceKey, fmt.Errorf("Unable to find service key for guid %s", guid)
 	}
 	return serviceKeys[0], nil
 }
@@ -145,8 +121,7 @@ func (c *Client) GetServiceKeysByInstanceGuid(guid string) ([]ServiceKey, error)
 		return serviceKeys, err
 	}
 	if len(serviceKeys) == 0 {
-		cfErr := NewServiceKeyNotFoundError()
-		return serviceKeys, cfErr
+		return serviceKeys, fmt.Errorf("Unable to find service key for guid %s", guid)
 	}
 	return serviceKeys, nil
 }
@@ -166,11 +141,12 @@ func (c *Client) CreateServiceKey(csr CreateServiceKeyRequest) (ServiceKey, erro
 	if err != nil {
 		return ServiceKey{}, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return ServiceKey{}, fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
+
 	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		return ServiceKey{}, err
 	}
@@ -179,7 +155,7 @@ func (c *Client) CreateServiceKey(csr CreateServiceKeyRequest) (ServiceKey, erro
 		return ServiceKey{}, err
 	}
 
-	return c.mergeServiceKey(serviceKeyResource), nil
+	return serviceKeyResource.Entity, nil
 }
 
 // DeleteServiceKey removes a service key instance
@@ -188,17 +164,8 @@ func (c *Client) DeleteServiceKey(guid string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error deleting service instance key %s, response code %d", guid, resp.StatusCode)
 	}
 	return nil
-}
-
-func (c *Client) mergeServiceKey(key ServiceKeyResource) ServiceKey {
-	key.Entity.Guid = key.Meta.Guid
-	key.Entity.CreatedAt = key.Meta.CreatedAt
-	key.Entity.UpdatedAt = key.Meta.UpdatedAt
-	key.Entity.c = c
-	return key.Entity
 }

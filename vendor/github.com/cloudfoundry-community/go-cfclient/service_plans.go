@@ -35,7 +35,6 @@ type ServicePlan struct {
 	Public              bool        `json:"public"`
 	Active              bool        `json:"active"`
 	Bindable            bool        `json:"bindable"`
-	PlanUpdateable      bool        `json:"plan_updateable"`
 	ServiceUrl          string      `json:"service_url"`
 	ServiceInstancesUrl string      `json:"service_instances_url"`
 	c                   *Client
@@ -43,15 +42,14 @@ type ServicePlan struct {
 
 func (c *Client) ListServicePlansByQuery(query url.Values) ([]ServicePlan, error) {
 	var servicePlans []ServicePlan
-	requestURL := "/v2/service_plans?" + query.Encode()
+	requestUrl := "/v2/service_plans?" + query.Encode()
 	for {
 		var servicePlansResp ServicePlansResponse
-		r := c.NewRequest("GET", requestURL)
+		r := c.NewRequest("GET", requestUrl)
 		resp, err := c.DoRequest(r)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting service plans")
 		}
-		defer resp.Body.Close()
 		resBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading service plans request:")
@@ -67,8 +65,8 @@ func (c *Client) ListServicePlansByQuery(query url.Values) ([]ServicePlan, error
 			servicePlan.Entity.c = c
 			servicePlans = append(servicePlans, servicePlan.Entity)
 		}
-		requestURL = servicePlansResp.NextUrl
-		if requestURL == "" {
+		requestUrl = servicePlansResp.NextUrl
+		if requestUrl == "" {
 			break
 		}
 	}

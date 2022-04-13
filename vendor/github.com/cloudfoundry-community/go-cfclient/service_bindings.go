@@ -52,7 +52,6 @@ func (c *Client) ListServiceBindingsByQuery(query url.Values) ([]ServiceBinding,
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting service bindings")
 		}
-		defer resp.Body.Close()
 		resBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading service bindings request:")
@@ -114,7 +113,6 @@ func (c *Client) DeleteServiceBinding(guid string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error deleting service binding %s, response code %d", guid, resp.StatusCode)
 	}
@@ -122,7 +120,7 @@ func (c *Client) DeleteServiceBinding(guid string) error {
 }
 
 func (c *Client) CreateServiceBinding(appGUID, serviceInstanceGUID string) (*ServiceBinding, error) {
-	req := c.NewRequest("POST", "/v2/service_bindings")
+	req := c.NewRequest("POST", fmt.Sprintf("/v2/service_bindings"))
 	req.obj = map[string]interface{}{
 		"app_guid":              appGUID,
 		"service_instance_guid": serviceInstanceGUID,
@@ -131,7 +129,6 @@ func (c *Client) CreateServiceBinding(appGUID, serviceInstanceGUID string) (*Ser
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return nil, errors.Wrapf(err, "Error binding app %s to service instance %s, response code %d", appGUID, serviceInstanceGUID, resp.StatusCode)
 	}
@@ -144,7 +141,6 @@ func (c *Client) CreateRouteServiceBinding(routeGUID, serviceInstanceGUID string
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return errors.Wrapf(err, "Error binding route %s to service instance %s, response code %d", routeGUID, serviceInstanceGUID, resp.StatusCode)
 	}
@@ -157,7 +153,6 @@ func (c *Client) DeleteRouteServiceBinding(routeGUID, serviceInstanceGUID string
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return errors.Wrapf(err, "Error deleting bound route %s from service instance %s, response code %d", routeGUID, serviceInstanceGUID, resp.StatusCode)
 	}

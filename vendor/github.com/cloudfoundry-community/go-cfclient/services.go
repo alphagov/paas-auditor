@@ -29,7 +29,6 @@ type Service struct {
 	Active               bool     `json:"active"`
 	Bindable             bool     `json:"bindable"`
 	ServiceBrokerGuid    string   `json:"service_broker_guid"`
-	ServiceBrokerName    string   `json:"service_broker_name"`
 	PlanUpdateable       bool     `json:"plan_updateable"`
 	Tags                 []string `json:"tags"`
 	UniqueID             string   `json:"unique_id"`
@@ -41,28 +40,9 @@ type Service struct {
 }
 
 type ServiceSummary struct {
-	Guid              string          `json:"guid"`
-	Name              string          `json:"name"`
-	BoundAppCount     int             `json:"bound_app_count"`
-	DashboardURL      string          `json:"dashboard_url"`
-	ServiceBrokerName string          `json:"service_broker_name"`
-	MaintenanceInfo   MaintenanceInfo `json:"maintenance_info"`
-	ServicePlan       struct {
-		Guid            string          `json:"guid"`
-		Name            string          `json:"name"`
-		MaintenanceInfo MaintenanceInfo `json:"maintenance_info"`
-		Service         struct {
-			Guid     string `json:"guid"`
-			Label    string `json:"label"`
-			Provider string `json:"provider"`
-			Version  string `json:"version"`
-		} `json:"service"`
-	} `json:"service_plan"`
-}
-
-type MaintenanceInfo struct {
-	Version     string `json:"version"`
-	Description string `json:"description"`
+	Guid          string `json:"guid"`
+	Name          string `json:"name"`
+	BoundAppCount int    `json:"bound_app_count"`
 }
 
 func (c *Client) GetServiceByGuid(guid string) (Service, error) {
@@ -72,8 +52,8 @@ func (c *Client) GetServiceByGuid(guid string) (Service, error) {
 	if err != nil {
 		return Service{}, err
 	}
-	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		return Service{}, err
 	}
@@ -90,15 +70,14 @@ func (c *Client) GetServiceByGuid(guid string) (Service, error) {
 
 func (c *Client) ListServicesByQuery(query url.Values) ([]Service, error) {
 	var services []Service
-	requestURL := "/v2/services?" + query.Encode()
+	requestUrl := "/v2/services?" + query.Encode()
 	for {
 		var serviceResp ServicesResponse
-		r := c.NewRequest("GET", requestURL)
+		r := c.NewRequest("GET", requestUrl)
 		resp, err := c.DoRequest(r)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting services")
 		}
-		defer resp.Body.Close()
 		resBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading services request:")
@@ -115,8 +94,8 @@ func (c *Client) ListServicesByQuery(query url.Values) ([]Service, error) {
 			service.Entity.c = c
 			services = append(services, service.Entity)
 		}
-		requestURL = serviceResp.NextUrl
-		if requestURL == "" {
+		requestUrl = serviceResp.NextUrl
+		if requestUrl == "" {
 			break
 		}
 	}

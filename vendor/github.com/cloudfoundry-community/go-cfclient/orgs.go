@@ -76,7 +76,7 @@ func (c *Client) ListOrgsByQuery(query url.Values) ([]Org, error) {
 			orgs = append(orgs, c.mergeOrgResource(org))
 		}
 		requestURL = orgResp.NextUrl
-		if requestURL == "" || query.Get("page") != "" {
+		if requestURL == "" {
 			break
 		}
 	}
@@ -96,9 +96,7 @@ func (c *Client) GetOrgByName(name string) (Org, error) {
 		return org, err
 	}
 	if len(orgs) == 0 {
-		cfErr := NewOrganizationNotFoundError()
-		cfErr.Description = fmt.Sprintf(cfErr.Description, name)
-		return org, cfErr
+		return org, fmt.Errorf("Unable to find org %s", name)
 	}
 	return orgs[0], nil
 }
@@ -123,7 +121,7 @@ func (c *Client) GetOrgByGuid(guid string) (Org, error) {
 }
 
 func (c *Client) OrgSpaces(guid string) ([]Space, error) {
-	return c.fetchSpaces(fmt.Sprintf("/v2/organizations/%s/spaces", guid), url.Values{})
+	return c.fetchSpaces(fmt.Sprintf("/v2/organizations/%s/spaces", guid))
 }
 
 func (o *Org) Summary() (OrgSummary, error) {
@@ -424,7 +422,6 @@ func (o *Org) SharePrivateDomain(privateDomainGUID string) (*Domain, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return nil, errors.Wrapf(err, "Error sharing domain %s for org %s, response code: %d", privateDomainGUID, o.Guid, resp.StatusCode)
 	}
@@ -438,7 +435,6 @@ func (o *Org) UnsharePrivateDomain(privateDomainGUID string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error unsharing domain %s for org %s, response code: %d", privateDomainGUID, o.Guid, resp.StatusCode)
 	}
@@ -452,7 +448,6 @@ func (o *Org) associateRole(userGUID, role string) (Org, error) {
 	if err != nil {
 		return Org{}, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return Org{}, errors.Wrapf(err, "Error associating %s %s, response code: %d", role, userGUID, resp.StatusCode)
 	}
@@ -501,7 +496,6 @@ func (o *Org) AssociateUser(userGUID string) (Org, error) {
 	if err != nil {
 		return Org{}, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return Org{}, errors.Wrapf(err, "Error associating user %s, response code: %d", userGUID, resp.StatusCode)
 	}
@@ -556,7 +550,6 @@ func (o *Org) associateUserByUsernameAndOrigin(name, origin string) (Org, error)
 	if err != nil {
 		return Org{}, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return Org{}, errors.Wrapf(err, "Error associating user %s, response code: %d", name, resp.StatusCode)
 	}
@@ -570,7 +563,6 @@ func (o *Org) removeRole(userGUID, role string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error removing %s %s, response code: %d", role, userGUID, resp.StatusCode)
 	}
@@ -601,7 +593,6 @@ func (o *Org) removeRoleByUsernameAndOrigin(name, role, origin string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error removing manager %s, response code: %d", name, resp.StatusCode)
 	}
@@ -649,7 +640,6 @@ func (o *Org) RemoveUser(userGUID string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error removing user %s, response code: %d", userGUID, resp.StatusCode)
 	}
@@ -687,7 +677,6 @@ func (o *Org) removeUserByUsernameAndOrigin(name, origin string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error removing user %s, response code: %d", name, resp.StatusCode)
 	}
@@ -705,7 +694,6 @@ func (c *Client) CreateOrg(req OrgRequest) (Org, error) {
 	if err != nil {
 		return Org{}, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return Org{}, errors.Wrapf(err, "Error creating organization, response code: %d", resp.StatusCode)
 	}
@@ -723,7 +711,6 @@ func (c *Client) UpdateOrg(orgGUID string, orgRequest OrgRequest) (Org, error) {
 	if err != nil {
 		return Org{}, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return Org{}, errors.Wrapf(err, "Error updating organization, response code: %d", resp.StatusCode)
 	}
@@ -735,7 +722,6 @@ func (c *Client) DeleteOrg(guid string, recursive, async bool) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error deleting organization %s, response code: %d", guid, resp.StatusCode)
 	}
@@ -839,7 +825,6 @@ func (c *Client) updateOrgDefaultIsolationSegment(orgGUID string, data interface
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return errors.Wrapf(err, "Error setting default isolation segment for org %s, response code: %d", orgGUID, resp.StatusCode)
 	}

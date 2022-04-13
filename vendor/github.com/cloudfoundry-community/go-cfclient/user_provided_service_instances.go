@@ -52,15 +52,14 @@ type UserProvidedServiceInstanceRequest struct {
 func (c *Client) ListUserProvidedServiceInstancesByQuery(query url.Values) ([]UserProvidedServiceInstance, error) {
 	var instances []UserProvidedServiceInstance
 
-	requestURL := "/v2/user_provided_service_instances?" + query.Encode()
+	requestUrl := "/v2/user_provided_service_instances?" + query.Encode()
 	for {
 		var sir UserProvidedServiceInstancesResponse
-		r := c.NewRequest("GET", requestURL)
+		r := c.NewRequest("GET", requestUrl)
 		resp, err := c.DoRequest(r)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error requesting user provided service instances")
 		}
-		defer resp.Body.Close()
 		resBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading user provided service instances request:")
@@ -78,8 +77,8 @@ func (c *Client) ListUserProvidedServiceInstancesByQuery(query url.Values) ([]Us
 			instances = append(instances, instance.Entity)
 		}
 
-		requestURL = sir.NextUrl
-		if requestURL == "" {
+		requestUrl = sir.NextUrl
+		if requestUrl == "" {
 			break
 		}
 	}
@@ -97,7 +96,7 @@ func (c *Client) GetUserProvidedServiceInstanceByGuid(guid string) (UserProvided
 	if err != nil {
 		return UserProvidedServiceInstance{}, errors.Wrap(err, "Error requesting user provided service instance")
 	}
-	defer res.Body.Close()
+
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return UserProvidedServiceInstance{}, errors.Wrap(err, "Error reading user provided service instance response")
@@ -128,7 +127,6 @@ func (c *Client) CreateUserProvidedServiceInstance(req UserProvidedServiceInstan
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}
@@ -141,7 +139,6 @@ func (c *Client) DeleteUserProvidedServiceInstance(guid string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.Wrapf(err, "Error deleting user provided service instance %s, response code %d", guid, resp.StatusCode)
 	}
@@ -159,7 +156,6 @@ func (c *Client) UpdateUserProvidedServiceInstance(guid string, req UserProvided
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("CF API returned with status code %d", resp.StatusCode)
 	}

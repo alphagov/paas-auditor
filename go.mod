@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	code.cloudfoundry.org/lager v2.0.0+incompatible
-	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220405200807-800807a1b060
+	github.com/cloudfoundry-community/go-cfclient v0.0.0-20190802192030-078182380772
 	github.com/gojektech/heimdall v5.0.2+incompatible
 	github.com/jarcoal/httpmock v1.0.4
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
