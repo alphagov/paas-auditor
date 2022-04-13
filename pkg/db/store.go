@@ -367,14 +367,6 @@ func (s *EventStore) runSQLFile(tx *sql.Tx, filename string) error {
 	return nil
 }
 
-// queryJSON returns rows as a json blobs, which makes it easier to decode into structs.
-func queryJSON(tx *sql.Tx, q string, args ...interface{}) (*sql.Rows, error) {
-	return tx.Query(fmt.Sprintf(`
-		with q as ( %s )
-		select row_to_json(q.*) from q;
-	`, q), args...)
-}
-
 func wrapPqError(err error, prefix string) error {
 	msg := err.Error()
 	if err, ok := err.(*pq.Error); ok {
