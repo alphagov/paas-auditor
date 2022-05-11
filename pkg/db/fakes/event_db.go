@@ -104,15 +104,16 @@ func (fake *FakeEventDB) GetCFAuditEvents(arg1 db.RawEventFilter) ([]cfclient.Ev
 	fake.getCFAuditEventsArgsForCall = append(fake.getCFAuditEventsArgsForCall, struct {
 		arg1 db.RawEventFilter
 	}{arg1})
+	stub := fake.GetCFAuditEventsStub
+	fakeReturns := fake.getCFAuditEventsReturns
 	fake.recordInvocation("GetCFAuditEvents", []interface{}{arg1})
 	fake.getCFAuditEventsMutex.Unlock()
-	if fake.GetCFAuditEventsStub != nil {
-		return fake.GetCFAuditEventsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getCFAuditEventsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -166,15 +167,16 @@ func (fake *FakeEventDB) GetCFEventCount() (int64, error) {
 	ret, specificReturn := fake.getCFEventCountReturnsOnCall[len(fake.getCFEventCountArgsForCall)]
 	fake.getCFEventCountArgsForCall = append(fake.getCFEventCountArgsForCall, struct {
 	}{})
+	stub := fake.GetCFEventCountStub
+	fakeReturns := fake.getCFEventCountReturns
 	fake.recordInvocation("GetCFEventCount", []interface{}{})
 	fake.getCFEventCountMutex.Unlock()
-	if fake.GetCFEventCountStub != nil {
-		return fake.GetCFEventCountStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getCFEventCountReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -221,15 +223,16 @@ func (fake *FakeEventDB) GetLatestCFEventTime() (time.Time, error) {
 	ret, specificReturn := fake.getLatestCFEventTimeReturnsOnCall[len(fake.getLatestCFEventTimeArgsForCall)]
 	fake.getLatestCFEventTimeArgsForCall = append(fake.getLatestCFEventTimeArgsForCall, struct {
 	}{})
+	stub := fake.GetLatestCFEventTimeStub
+	fakeReturns := fake.getLatestCFEventTimeReturns
 	fake.recordInvocation("GetLatestCFEventTime", []interface{}{})
 	fake.getLatestCFEventTimeMutex.Unlock()
-	if fake.GetLatestCFEventTimeStub != nil {
-		return fake.GetLatestCFEventTimeStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getLatestCFEventTimeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -277,15 +280,16 @@ func (fake *FakeEventDB) GetUnshippedCFAuditEventsForShipper(arg1 string) ([]cfc
 	fake.getUnshippedCFAuditEventsForShipperArgsForCall = append(fake.getUnshippedCFAuditEventsForShipperArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetUnshippedCFAuditEventsForShipperStub
+	fakeReturns := fake.getUnshippedCFAuditEventsForShipperReturns
 	fake.recordInvocation("GetUnshippedCFAuditEventsForShipper", []interface{}{arg1})
 	fake.getUnshippedCFAuditEventsForShipperMutex.Unlock()
-	if fake.GetUnshippedCFAuditEventsForShipperStub != nil {
-		return fake.GetUnshippedCFAuditEventsForShipperStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getUnshippedCFAuditEventsForShipperReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -339,15 +343,16 @@ func (fake *FakeEventDB) Init() error {
 	ret, specificReturn := fake.initReturnsOnCall[len(fake.initArgsForCall)]
 	fake.initArgsForCall = append(fake.initArgsForCall, struct {
 	}{})
+	stub := fake.InitStub
+	fakeReturns := fake.initReturns
 	fake.recordInvocation("Init", []interface{}{})
 	fake.initMutex.Unlock()
-	if fake.InitStub != nil {
-		return fake.InitStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.initReturns
 	return fakeReturns.result1
 }
 
@@ -397,15 +402,16 @@ func (fake *FakeEventDB) StoreCFAuditEvents(arg1 []cfclient.Event) error {
 	fake.storeCFAuditEventsArgsForCall = append(fake.storeCFAuditEventsArgsForCall, struct {
 		arg1 []cfclient.Event
 	}{arg1Copy})
+	stub := fake.StoreCFAuditEventsStub
+	fakeReturns := fake.storeCFAuditEventsReturns
 	fake.recordInvocation("StoreCFAuditEvents", []interface{}{arg1Copy})
 	fake.storeCFAuditEventsMutex.Unlock()
-	if fake.StoreCFAuditEventsStub != nil {
-		return fake.StoreCFAuditEventsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.storeCFAuditEventsReturns
 	return fakeReturns.result1
 }
 
@@ -459,15 +465,16 @@ func (fake *FakeEventDB) UpdateShipperCursor(arg1 string, arg2 string, arg3 stri
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.UpdateShipperCursorStub
+	fakeReturns := fake.updateShipperCursorReturns
 	fake.recordInvocation("UpdateShipperCursor", []interface{}{arg1, arg2, arg3})
 	fake.updateShipperCursorMutex.Unlock()
-	if fake.UpdateShipperCursorStub != nil {
-		return fake.UpdateShipperCursorStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateShipperCursorReturns
 	return fakeReturns.result1
 }
 
