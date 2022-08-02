@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/lager"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"

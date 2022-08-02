@@ -12,7 +12,7 @@ import (
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/jarcoal/httpmock"
 	"github.com/jinzhu/copier"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/alphagov/paas-auditor/pkg/fetchers"
