@@ -2,8 +2,8 @@
 applications:
   - name: paas-auditor
     memory: 1G
-    disk_quota: 100M
-    stack: cflinuxfs3
+    disk_quota: 128M
+    stack: cflinuxfs4
     instances: 1
     buildpack: go_buildpack
     command: ./bin/paas-auditor
